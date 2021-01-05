@@ -7,10 +7,15 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "file-loader": "^6.2.0",
+    "nprogress": "^0.2.0",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html",
     "phoenix_live_view": "file:../deps/phoenix_live_view",
-    "nprogress": "^0.2.0"
+    "typeface-montserrat": "^1.1.13",
+    "typeface-roboto": "^1.1.13",
+    "typeface-roboto-condensed": "^1.1.13",
+    "typeface-roboto-slab": "^1.1.13"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

@@ -1,0 +1,5 @@
+Here is your login link:
+
+<%= signin_url(NyraApp.Endpoint, :show, @token) %>
+
+It is valid for 30 minutes.

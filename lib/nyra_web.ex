@@ -47,6 +47,8 @@ defmodule NyraWeb do
       use Phoenix.LiveView,
         layout: {NyraWeb.LayoutView, "live.html"}
 
+      import NyraWeb.LiveHelpers
+
       unquote(view_helpers())
     end
   end

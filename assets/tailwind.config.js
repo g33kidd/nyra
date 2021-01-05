@@ -7,7 +7,18 @@ module.exports = {
   ],
   darkMode: false, // or 'media' or 'class'
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'nyra-pink': "#F44B65",
+        'nyra-orange': "#E48D3D"
+      },
+      fontFamily: {
+        'slab': ['Roboto Slab', 'sans-serif'],
+        'roboto': ['Roboto', 'sans-serif'],
+        'condensed': ['Roboto Condensed', 'sans-serif'],
+        'montserrate': ['Montserrate', 'sans-serif']
+      },
+    },
   },
   variants: {
     extend: {},
