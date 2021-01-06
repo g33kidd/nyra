@@ -8,11 +8,6 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    # ! not really sure we need this since not passing messages...
-    # if connected?(socket) do
-    #   Phoenix.PubSub.subscribe(Nyra.PubSub, "verify_user:123")
-    # end
-
     user_changeset = Accounts.create_user_changeset()
 
     assigns = [
@@ -31,20 +26,10 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def handle_event("authenticate", %{"email" => email}, socket) do
-    changeset = socket.assigns.changeset |> Accounts.User.change_email(email)
-    # fuck you
-    {
-      :noreply,
-      case Accounts.get_user_by(email: email) do
-        {:ok, nil} ->
-          handle_no_user(assign(socket, :changeset, changeset))
-
-        {:ok, user} ->
-          handle_with_user(assign(socket, :changeset, changeset), user)
-      end
-    }
+    {:noreply, authenticate(socket, email)}
   end
 
+  @impl true
   def handle_event("verify", %{"code" => code}, socket) do
     with :ok <- Nyra.Bouncer.check(socket.id, code) do
       socket =
@@ -59,15 +44,25 @@ defmodule NyraWeb.PageLive do
     end
   end
 
-  # def handle_event("validate_email", params, socket) do
-  #   changeset =
-  #     %User{}
-  #     |> User.changeset(params)
-  #     |> Map.put(:action, :insert)
-  # end
+  defp authenticate(socket, email) do
+    # Find or create user based on the Email Address.
+    # Create the user.
+    # Assign the Bouncer code to the socket.
 
-  # def handle_event("verify_code", %{"code" => code}, socket) do
-  # end
+    case Accounts.find_or_create_user(%{"email" => email}) do
+      {:created, user} -> handle_no_user(socket, user)
+      {:ok, user} -> handle_with_user(socket, user)
+      {:error, changeset} -> {:error, changeset}
+    end
+
+    # case Accounts.get_user_by(email: email) do
+    #   {:ok, nil} ->
+    #     handle_no_user(assign(socket, :changeset, changeset))
+
+    #   {:ok, user} ->
+    #     handle_with_user(assign(socket, :changeset, changeset), user)
+    # end
+  end
 
   # Modifies and returns a new socket with information regarding an existing user.
   defp handle_with_user(socket, user) do
@@ -80,13 +75,13 @@ defmodule NyraWeb.PageLive do
     |> assign(awaiting_code: true)
   end
 
-  defp handle_no_user(socket) do
+  defp handle_no_user(socket, user) do
     Nyra.Bouncer.assign_code(socket.id)
-    |> IO.inspect()
 
     socket
     |> assign(new_user: true)
     |> assign(awaiting_code: true)
+    |> assign(current_user: user)
     |> put_flash(:welcome, @welcome_msg)
   end
 
