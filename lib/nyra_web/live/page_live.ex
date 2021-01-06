@@ -1,6 +1,11 @@
 defmodule NyraWeb.PageLive do
   use NyraWeb, :live_view
 
+  alias Nyra.Accounts
+  alias Nyra.Accounts.User
+
+  @welcome_msg "Thanks for joining Nyra! We're currently in Beta, so please let us know what you think ^_^"
+
   @impl true
   def mount(_params, _session, socket) do
     # ! not really sure we need this since not passing messages...
@@ -8,22 +13,81 @@ defmodule NyraWeb.PageLive do
     #   Phoenix.PubSub.subscribe(Nyra.PubSub, "verify_user:123")
     # end
 
-    socket =
-      socket
-      |> assign(email: "")
-      |> assign(awaiting_code: false)
-      |> assign(current_user: nil)
+    user_changeset = Accounts.create_user_changeset()
 
-    {:ok, socket}
+    assigns = [
+      email: "",
+      code: "",
+      real_code: "",
+      changeset: user_changeset,
+      error_message: "",
+      awaiting_code: nil,
+      current_user: nil,
+      new_user: nil
+    ]
+
+    {:ok, assign(socket, assigns)}
   end
 
+  @impl true
   def handle_event("authenticate", %{"email" => email}, socket) do
-    socket =
-      socket
-      |> assign(awaiting_code: true)
-      |> put_flash(:info, "Waiting for verification code...")
+    changeset = socket.assigns.changeset |> Accounts.User.change_email(email)
+    # fuck you
+    {
+      :noreply,
+      case Accounts.get_user_by(email: email) do
+        {:ok, nil} ->
+          handle_no_user(assign(socket, :changeset, changeset))
 
-    {:noreply, socket}
+        {:ok, user} ->
+          handle_with_user(assign(socket, :changeset, changeset), user)
+      end
+    }
+  end
+
+  def handle_event("verify", %{"code" => code}, socket) do
+    with :ok <- Nyra.Bouncer.check(socket.id, code) do
+      socket =
+        socket
+        |> put_flash(:info, "You're in! Congrats..")
+
+      {:noreply, socket}
+    else
+      nil -> {:noreply, assign(socket, :error_message, "Invalid code.")}
+      {:error, ugh} -> {:noreply, assign(socket, :error_message, ugh)}
+      :else -> {:noreply, assign(socket, :error_message, "Not sure this time..")}
+    end
+  end
+
+  # def handle_event("validate_email", params, socket) do
+  #   changeset =
+  #     %User{}
+  #     |> User.changeset(params)
+  #     |> Map.put(:action, :insert)
+  # end
+
+  # def handle_event("verify_code", %{"code" => code}, socket) do
+  # end
+
+  # Modifies and returns a new socket with information regarding an existing user.
+  defp handle_with_user(socket, user) do
+    Nyra.Bouncer.assign_code(socket.id)
+    |> IO.inspect()
+
+    socket
+    |> assign(new_user: false)
+    |> assign(current_user: user)
+    |> assign(awaiting_code: true)
+  end
+
+  defp handle_no_user(socket) do
+    Nyra.Bouncer.assign_code(socket.id)
+    |> IO.inspect()
+
+    socket
+    |> assign(new_user: true)
+    |> assign(awaiting_code: true)
+    |> put_flash(:welcome, @welcome_msg)
   end
 
   # @impl true

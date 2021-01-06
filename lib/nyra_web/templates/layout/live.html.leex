@@ -1,12 +1,11 @@
 <main role="main">
-
-  <div class="container py-2 text-sm font-roboto" role="alert"
+  <p class="alert alert-info" role="alert"
     phx-click="lv:clear-flash"
-    phx-value-key="info"><%= live_flash(@flash, :info) %></div>
+    phx-value-key="info"><%= live_flash(@flash, :info) %></p>
 
-  <div class="alert alert-danger" role="alert"
+  <p class="alert alert-danger" role="alert"
     phx-click="lv:clear-flash"
-    phx-value-key="error"><%= live_flash(@flash, :error) %></div>
+    phx-value-key="error"><%= live_flash(@flash, :error) %></p>
 
   <%= @inner_content %>
 </main>

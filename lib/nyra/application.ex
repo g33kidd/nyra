@@ -14,9 +14,10 @@ defmodule Nyra.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Nyra.PubSub},
       # Start the Endpoint (http/https)
-      NyraWeb.Endpoint
+      NyraWeb.Endpoint,
       # Start a worker by calling: Nyra.Worker.start_link(arg)
       # {Nyra.Worker, arg}
+      Nyra.Bouncer
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

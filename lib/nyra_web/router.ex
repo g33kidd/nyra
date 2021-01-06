@@ -18,7 +18,6 @@ defmodule NyraWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
-    live "/verify", VerifyLive, :verify
   end
 
   # Other scopes may use custom stacks.

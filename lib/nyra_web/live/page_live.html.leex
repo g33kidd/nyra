@@ -1,13 +1,26 @@
-<div class="container mx-auto py-12">
+<div class="container mx-auto">
 
-  <h1 class="bg-gradient-to-r font-montserrat text-gradient from-nyra-pink to-nyra-orange text-4xl">nyra</h1>
+  <h1 class="bg-gradient-to-r py-8 font-montserrat text-gradient from-nyra-pink to-nyra-orange text-5xl">
+    nyra
+  </h1>
 
-  <form phx-submit="authenticate">
-    <input class="py-3 px-3 rounded bg-gray-100" type="email" name="email" value="<%= @email %>" placeholder="Email Address" autocomplete="off" />
-    <button type="submit" phx-disable-with="Working..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
-  </form>
-
-  <%= if @awaiting_code do %>
+  <%= cond do %>
+    <% is_nil(@awaiting_code) -> %>
+    <form phx-submit="authenticate">
+      <input class="py-3 px-3 rounded bg-gray-100" type="email" name="email" value="<%= @email %>" placeholder="Email Address" autocomplete="on" />
+      <button type="submit" phx-disable-with="Working..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
+    </form>
+    <% @awaiting_code -> %>
     <div>awaiting code...</div>
+    <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
+    <%= @error_message %>
+    <form phx-submit="verify">
+      <div>Email <%= @changeset.changes.email %></div>
+      <div>Random Username <%= @changeset.changes.username %></div>
+      <input type="text" class="py-3 px-3 rounded bg-gray-100" type="text" name="code" value="<%= @code %>" placeholder="Enter code..." autocomplete="off" />
+      <button type="submit" phx-disable-with="Verifying code..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
+    </form>
+    <% !@awaiting_code -> %>
+    <h2 class="text-xl">Good job?!</h2>
   <% end %>
 </div>
