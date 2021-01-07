@@ -33,8 +33,13 @@ defmodule Nyra.Bouncer do
 
   def handle_call({:verify, socket_id, input}, _, _) do
     case :ets.lookup(@name, socket_id) do
-      [result | _] -> {:reply, :ok, validate_coolness(result, input)}
-      [] -> nil
+      [result | rest] ->
+        IO.inspect(result)
+        IO.inspect(rest)
+        {:reply, :ok, validate_coolness(result, input)}
+
+      [] ->
+        {:reply, :error, "Invalid code."}
     end
   end
 

@@ -5,6 +5,7 @@ defmodule NyraWeb.PageLive do
   alias Nyra.Accounts.User
 
   @welcome_msg "Thanks for joining Nyra! We're currently in Beta, so please let us know what you think ^_^"
+  @welcome_back "Welcome back!"
 
   @impl true
   def mount(_params, _session, socket) do
@@ -31,6 +32,9 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def handle_event("verify", %{"code" => code}, socket) do
+    Nyra.Bouncer.check(socket.id, code)
+    |> IO.inspect()
+
     with :ok <- Nyra.Bouncer.check(socket.id, code) do
       socket =
         socket
@@ -73,10 +77,14 @@ defmodule NyraWeb.PageLive do
     |> assign(new_user: false)
     |> assign(current_user: user)
     |> assign(awaiting_code: true)
+    |> put_flash(:welcome_back, @welcome_back)
+
+    # it works, just make sure the right messages are sent..
   end
 
   defp handle_no_user(socket, user) do
     Nyra.Bouncer.assign_code(socket.id)
+    # it works, just make sure the right messages are sent..
 
     socket
     |> assign(new_user: true)
