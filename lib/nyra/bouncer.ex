@@ -11,15 +11,16 @@ defmodule Nyra.Bouncer do
 
   def start_link(_), do: GenServer.start_link(__MODULE__, [], name: @name)
 
-  @doc """
-  Guestlists a user in the Bouncer application. They will be tested later when they try to enter :)
-  """
   def guestlist(sid) do
     GenServer.call(@name, {:guestlist, sid})
   end
 
-  def is_cool?(pid, code) do
-    GenServer.call(@name, {:check, pid, code})
+  def is_cool?(sid, code) do
+    GenServer.call(@name, {:check, sid, code})
+  end
+
+  def expire_codes do
+    GenServer.call(@name, {:expire_codes, :os.system_time(:seconds)})
   end
 
   # Callbacks
@@ -33,8 +34,33 @@ defmodule Nyra.Bouncer do
     {:ok, state}
   end
 
-  def handle_cast({:guestlist, sid}, state) do
-    {:noreply, [{generate_code(sid), sid} | state]}
+  def handle_call({:guestlist, sid}, state) do
+    newstate = [{generate_code(sid), sid} | state]
+    {:noreply, newstate}
+  end
+
+  def handle_call({:check, sid, code}, state) do
+
+      code =
+
+  end
+    # with true <- Enum.any?(state, fn u -> {code, sid} == u end) do
+    # else
+    #   false -> {:reply}
+    # end
+  # end
+
+  def handle_call({:expire_codes, time}, state) do
+    {
+      :noreply,
+      Enum.filter(state, fn u -> expired?(u, time) end)
+    }
+  end
+
+  def expired?({_, _, exp}, now), do: exp < now
+
+  def find_code() do
+    Enum.
   end
 
   def generate_code(salt \\ "crypto") do
@@ -46,4 +72,5 @@ defmodule Nyra.Bouncer do
     |> :binary.list_to_bin()
     |> String.upcase()
   end
+
 end
