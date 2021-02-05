@@ -21,9 +21,9 @@ defmodule NyraWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", NyraWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", NyraWeb do
+    pipe_through :api
+  end
 
   # Enables LiveDashboard only for development
   #

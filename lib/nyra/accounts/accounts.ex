@@ -43,6 +43,7 @@ defmodule Nyra.Accounts do
     end
   end
 
+  # TODO make a new list of random names or whatever.
   def generate_username do
     # [[64][64]]
     [

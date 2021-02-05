@@ -5,22 +5,31 @@
   </h1>
 
   <%= cond do %>
+
+    <%# Start. %>
     <% is_nil(@awaiting_code) -> %>
-    <form phx-submit="authenticate">
-      <input class="py-3 px-3 rounded bg-gray-100" type="email" name="email" value="<%= @email %>" placeholder="Email Address" autocomplete="on" />
-      <button type="submit" phx-disable-with="Working..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
-    </form>
+      <form phx-submit="authenticate">
+        <input class="py-3 px-3 rounded bg-gray-100" type="email" name="email" value="<%= @email %>" placeholder="Email Address" autocomplete="on" />
+        <button type="submit" phx-disable-with="Working..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
+      </form>
+
+    <%# User is waiting for a code. %>
     <% @awaiting_code -> %>
-    <div>awaiting code...</div>
-    <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
+      <div>awaiting code...</div>
+      <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
+
+    <%# Most likely if an email has already been used. %>
     <%= @error_message %>
-    <form phx-submit="verify">
-      <div>Email <%= @changeset.changes.email %></div>
-      <div>Random Username <%= @changeset.changes.username %></div>
-      <input type="text" class="py-3 px-3 rounded bg-gray-100" type="text" name="code" value="<%= @code %>" placeholder="Enter code..." autocomplete="off" />
-      <button type="submit" phx-disable-with="Verifying code..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
-    </form>
+      <form phx-submit="verify">
+        <div>Email <%= @changeset.changes.email %></div>
+        <div>Random Username <%= @changeset.changes.username %></div>
+        <input type="text" class="py-3 px-3 rounded bg-gray-100" type="text" name="code" value="<%= @code %>" placeholder="Enter code..." autocomplete="off" />
+        <button type="submit" phx-disable-with="Verifying code..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Verify</button>
+      </form>
+
+    <%# Hmm... is this case needed? %>
     <% !@awaiting_code -> %>
-    <h2 class="text-xl">Good job?!</h2>
+      <h2 class="text-xl">Good job?!</h2>
+
   <% end %>
 </div>

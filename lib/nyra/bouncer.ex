@@ -1,67 +1,95 @@
 defmodule Nyra.Bouncer do
-  use GenServer
-
   @moduledoc """
-  [Bouncer] is the coolest dude around.
-  It will generate a randomly generated code for the user to auth with.
+  [Bouncer] was created to authenticate a user on Nyra without a password.
+
+  The state of each user trying to authenticate is stored in a List.
+
+  Each state contains this data (in order):
+    - Generated Code
+    - Origin Socket ID
+    - Expiration Time, in seconds.
   """
 
+  use GenServer
+
   @name __MODULE__
-  @expires 120
+  @expire_interval 30_000
 
   def start_link(_), do: GenServer.start_link(__MODULE__, [], name: @name)
 
+  # Pushing the user to the state
   def guestlist(sid) do
     GenServer.call(@name, {:guestlist, sid})
   end
 
-  def is_cool?(sid, code) do
-    GenServer.call(@name, {:check, sid, code})
+  # Seeing if token exists in the state and verifies it.
+  def is_cool?(code) do
+    GenServer.call(@name, {:is_cool, code})
   end
 
-  def expire_codes do
-    GenServer.call(@name, {:expire_codes, :os.system_time(:seconds)})
-  end
+  # Take codes where [expired?] is true.
+  def expire_codes, do: GenServer.call(@name, :expire_codes)
+
+  # Just for development...
+  def read_state, do: GenServer.call(@name, :read_state)
 
   # Callbacks
 
   @impl true
-  def init(state = []) do
-    # Removes codes that have been used or not used within the expiration time.
-    :timer.send_interval(@expires * 120_000, :expire_codes)
+  def init(state \\ []) do
+    expire_tick()
 
     # initializing the state
     {:ok, state}
   end
 
-  def handle_call({:guestlist, sid}, state) do
-    newstate = [{generate_code(sid), sid} | state]
-    {:noreply, newstate}
+  defp expire_tick, do: Process.send_after(@name, :expire_codes, @expire_interval)
+
+  # this is honestly for development so when this is not needed... chuck it!
+  @impl true
+  def handle_call(:read_state, _from, state), do: {:reply, state, state}
+
+  # Adds a user to the guestlist containing the expiration time, auth code & original session id.
+  @impl true
+  def handle_call({:guestlist, sid}, _from, state) do
+    code = generate_code(sid)
+    expires_at = :os.system_time(:seconds) + 1800
+    entry = {code, sid, expires_at}
+    new_state = [entry | state]
+
+    {:reply, :ok, new_state}
   end
 
-  def handle_call({:check, sid, code}, state) do
+  @impl true
+  def handle_call({:is_cool, code}, _from, state) do
+    match =
+      state
+      |> Enum.filter(fn {_, _, exp} -> !expired?(exp) end)
+      |> Enum.find(nil, fn {scode, _sid, _exp} -> scode == code end)
 
-      code =
+    case match do
+      {_code, _sid, _exp} ->
+        {:reply, :ok, Enum.filter(state, fn {scode, _, _exp} -> scode != code end)}
 
+      nil ->
+        {:reply, {:error, "Verification failed."}, state}
+    end
   end
-    # with true <- Enum.any?(state, fn u -> {code, sid} == u end) do
-    # else
-    #   false -> {:reply}
-    # end
-  # end
 
-  def handle_call({:expire_codes, time}, state) do
+  # Removes codes from the state when the expired time is greater than the system time.
+  @impl true
+  def handle_call(:expire_codes, _from, state) do
     {
-      :noreply,
-      Enum.filter(state, fn u -> expired?(u, time) end)
+      :reply,
+      :ok,
+      Enum.filter(
+        state,
+        fn {_, _, exp} -> expired?(exp) end
+      )
     }
   end
 
-  def expired?({_, _, exp}, now), do: exp < now
-
-  def find_code() do
-    Enum.
-  end
+  def expired?(time), do: time > :os.system_time(:seconds)
 
   def generate_code(salt \\ "crypto") do
     :crypto.hash(:sha256, salt)
@@ -72,5 +100,4 @@ defmodule Nyra.Bouncer do
     |> :binary.list_to_bin()
     |> String.upcase()
   end
-
 end

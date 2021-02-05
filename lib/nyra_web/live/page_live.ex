@@ -15,12 +15,12 @@ defmodule NyraWeb.PageLive do
     assigns = [
       email: "",
       code: "",
-      real_code: "",
       changeset: user_changeset,
       error_message: "",
       awaiting_code: nil,
       current_user: nil,
-      new_user: nil
+      new_user: nil,
+      success: false
     ]
 
     {:ok, assign(socket, assigns)}
@@ -33,15 +33,20 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def handle_event("verify", %{"code" => code}, socket) do
+    socket.assigns
+    |> IO.inspect()
 
-    {:noreply, socket}
+    Bouncer.is_cool?(code)
+    |> IO.inspect()
+
+    # case Bouncer.is_cool?(code) do
+    #   :ok -> {:noreply, socket |> assign(success: true)}
+    #   {:error, msg} -> {:noreply, socket |> assign(error_message: msg)}
+    #   nil -> {:noreply, socket |> assign(error_message: "idk")}
+    # end
   end
 
   defp authenticate(socket, email) do
-    # Find or create user based on the Email Address.
-    # Create the user.
-    # Assign the Bouncer code to the socket.
-
     case Accounts.find_or_create_user(%{"email" => email}) do
       {:created, user} -> handle_no_user(socket, user)
       {:ok, user} -> handle_with_user(socket, user)
@@ -51,21 +56,18 @@ defmodule NyraWeb.PageLive do
 
   # Modifies and returns a new socket with information regarding an existing user.
   defp handle_with_user(socket, user) do
-    Nyra.Bouncer.assign_code(socket.id)
+    with :ok <- Bouncer.guestlist(socket.id) do
+      IO.inspect(user.email)
 
-    socket
-    |> put_flash(:welcome_back, @welcome_back)
-    |> assign(new_user: false)
-    |> assign(current_user: user)
-    |> assign(awaiting_code: true)
-
-    # it works, just make sure the right messages are sent..
+      socket
+      |> put_flash(:welcome_back, @welcome_back)
+      |> assign(new_user: false)
+      |> assign(current_user: user)
+      |> assign(awaiting_code: true)
+    end
   end
 
   defp handle_no_user(socket, user) do
-    Nyra.Bouncer.assign_code(socket.id)
-    # it works, just make sure the right messages are sent..
-
     socket
     |> put_flash(:welcome, @welcome_msg)
     |> assign(new_user: true)
