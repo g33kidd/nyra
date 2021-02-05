@@ -33,17 +33,11 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def handle_event("verify", %{"code" => code}, socket) do
-    socket.assigns
-    |> IO.inspect()
-
-    Bouncer.is_cool?(code)
-    |> IO.inspect()
-
-    # case Bouncer.is_cool?(code) do
-    #   :ok -> {:noreply, socket |> assign(success: true)}
-    #   {:error, msg} -> {:noreply, socket |> assign(error_message: msg)}
-    #   nil -> {:noreply, socket |> assign(error_message: "idk")}
-    # end
+    case Bouncer.is_cool?(code) do
+      :ok -> {:noreply, socket |> assign(success: true)}
+      {:error, msg} -> {:noreply, socket |> assign(error_message: msg)}
+      nil -> {:noreply, socket |> assign(error_message: "idk")}
+    end
   end
 
   defp authenticate(socket, email) do
@@ -56,8 +50,9 @@ defmodule NyraWeb.PageLive do
 
   # Modifies and returns a new socket with information regarding an existing user.
   defp handle_with_user(socket, user) do
-    with :ok <- Bouncer.guestlist(socket.id) do
-      IO.inspect(user.email)
+    with {:ok, code} <- Bouncer.guestlist(socket.id) do
+      Nyra.Emails.login_link(code, user)
+      |> Nyra.Mailer.deliver_later()
 
       socket
       |> put_flash(:welcome_back, @welcome_back)

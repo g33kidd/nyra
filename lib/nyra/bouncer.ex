@@ -37,23 +37,23 @@ defmodule Nyra.Bouncer do
 
   @impl true
   def init(state \\ []) do
-    expire_tick()
+    :timer.send_interval(@expire_interval, @name, :expire_codes)
 
     # initializing the state
     {:ok, state}
   end
 
-  defp expire_tick, do: Process.send_after(@name, :expire_codes, @expire_interval)
+  # defp expire_tick, do: Process.send_after(@name, :expire_codes, @expire_interval)
 
-  def handle_info(:expire_tick, state) do
-    # DO THE TICK
-    # DO THE TICK
-    # DO THE TICK
-    # DO THE TICK
-    # DO THE TICK
-    # DO THE TICK
-
-    {:reply, :ok}
+  @impl true
+  def handle_info(:expire_codes, state) do
+    {
+      :noreply,
+      Enum.filter(
+        state,
+        fn {_, _, exp} -> expired?(exp) end
+      )
+    }
   end
 
   # this is honestly for development so when this is not needed... chuck it!
@@ -68,7 +68,7 @@ defmodule Nyra.Bouncer do
     entry = {code, sid, expires_at}
     new_state = [entry | state]
 
-    {:reply, :ok, new_state}
+    {:reply, {:ok, code}, new_state}
   end
 
   @impl true
@@ -88,17 +88,9 @@ defmodule Nyra.Bouncer do
   end
 
   # Removes codes from the state when the expired time is greater than the system time.
-  @impl true
-  def handle_call(:expire_codes, _from, state) do
-    {
-      :reply,
-      :ok,
-      Enum.filter(
-        state,
-        fn {_, _, exp} -> expired?(exp) end
-      )
-    }
-  end
+  # @impl true
+  # def handle_call(:expire_codes, _from, state) do
+  # end
 
   def expired?(time), do: time > :os.system_time(:seconds)
 
@@ -109,6 +101,7 @@ defmodule Nyra.Bouncer do
     |> Enum.shuffle()
     |> Enum.take(6)
     |> :binary.list_to_bin()
-    |> String.upcase()
+
+    # |> String.upcase()
   end
 end

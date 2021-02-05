@@ -17,6 +17,7 @@
     <% @awaiting_code -> %>
       <div>awaiting code...</div>
       <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
+      <div>if you leave this page your session will be terminated.</div>
 
     <%# Most likely if an email has already been used. %>
     <%= @error_message %>
@@ -27,8 +28,7 @@
         <button type="submit" phx-disable-with="Verifying code..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Verify</button>
       </form>
 
-    <%# Hmm... is this case needed? %>
-    <% !@awaiting_code -> %>
+    <% @success -> %>
       <h2 class="text-xl">Good job?!</h2>
 
   <% end %>
