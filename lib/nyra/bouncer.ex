@@ -45,6 +45,17 @@ defmodule Nyra.Bouncer do
 
   defp expire_tick, do: Process.send_after(@name, :expire_codes, @expire_interval)
 
+  def handle_info(:expire_tick, state) do
+    # DO THE TICK
+    # DO THE TICK
+    # DO THE TICK
+    # DO THE TICK
+    # DO THE TICK
+    # DO THE TICK
+
+    {:reply, :ok}
+  end
+
   # this is honestly for development so when this is not needed... chuck it!
   @impl true
   def handle_call(:read_state, _from, state), do: {:reply, state, state}
