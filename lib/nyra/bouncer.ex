@@ -47,13 +47,8 @@ defmodule Nyra.Bouncer do
 
   @impl true
   def handle_info(:expire_codes, state) do
-    {
-      :noreply,
-      Enum.filter(
-        state,
-        fn {_, _, exp} -> expired?(exp) end
-      )
-    }
+    filtered_state = Enum.filter(state, fn {_, _, exp} -> expired?(exp) end)
+    {:noreply, filtered_state}
   end
 
   # this is honestly for development so when this is not needed... chuck it!
@@ -75,7 +70,7 @@ defmodule Nyra.Bouncer do
   def handle_call({:is_cool, code}, _from, state) do
     match =
       state
-      |> Enum.filter(fn {_, _, exp} -> !expired?(exp) end)
+      |> Enum.filter(fn {_, _, exp} -> not expired?(exp) end)
       |> Enum.find(nil, fn {scode, _sid, _exp} -> scode == code end)
 
     case match do
@@ -101,7 +96,6 @@ defmodule Nyra.Bouncer do
     |> Enum.shuffle()
     |> Enum.take(6)
     |> :binary.list_to_bin()
-
-    # |> String.upcase()
+    |> String.upcase()
   end
 end

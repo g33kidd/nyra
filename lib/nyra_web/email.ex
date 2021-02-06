@@ -8,10 +8,10 @@ defmodule Nyra.Emails do
     |> to(user.email)
     |> from("info@nyra.app")
     |> subject("🚀 Nyra Magic Login Code")
-    |> text_body("""
-    Here is your login code: #{code}
-
-    It is valid for 30 minutes.
+    |> html_body("""
+    <p>Here is your login code:</p>
+    <h1><strong>#{code}</strong></h1>
+    <p>It is valid for 30 minutes.</p>
     """)
   end
 end

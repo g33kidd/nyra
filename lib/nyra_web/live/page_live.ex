@@ -33,6 +33,8 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def handle_event("verify", %{"code" => code}, socket) do
+    IO.inspect(Bouncer.is_cool?(code))
+
     case Bouncer.is_cool?(code) do
       :ok -> {:noreply, socket |> assign(success: true)}
       {:error, msg} -> {:noreply, socket |> assign(error_message: msg)}
