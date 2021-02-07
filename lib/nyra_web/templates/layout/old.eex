@@ -1,0 +1,50 @@
+<div class="container px-8 py-4">
+
+  <%# Header section, branding... %>
+  <div class="mx-auto">
+    <h1 class="bg-gradient-to-r font-bold font-montserrate text-gradient from-nyra-pink to-nyra-orange text-5xl pb-1">
+      nyra
+    </h1>
+
+    <p class="font-bold font-condensed mt-2">
+      Quick, anonymous chats or whatever.
+    </p>
+
+    <div class="sm:w-full lg:w-1/3 md:w-1/2 mt-12">
+      <p class="font-slab">
+        So I kind of made this site because I like talking to people, it's a fun experiment to build something like an Anonymous Chat app as I feel like there are a lot of problems to solve to get it right. Enjoy!
+      </p>
+    </div>
+  </div>
+
+  <%# Authentication %>
+  <div class="sm:w-full lg:w-1/3 md:w-1/2 mt-12">
+  <%= cond do %>
+
+    <%# Start. %>
+    <% is_nil(@awaiting_code) -> %>
+      <form phx-submit="authenticate">
+        <input class="py-3 px-3 rounded bg-gray-100" type="email" name="email" value="<%= @email %>" placeholder="Email Address" autocomplete="on" />
+        <button type="submit" phx-disable-with="Working..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
+      </form>
+
+    <%# User is waiting for a code. %>
+    <% @awaiting_code -> %>
+      <div>awaiting code...</div>
+      <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
+      <div>if you leave this page your session will be terminated.</div>
+
+    <%# Most likely if an email has already been used. %>
+    <%= @error_message %>
+      <form phx-submit="verify">
+        <div>Random Username <%= @changeset.changes.username %></div>
+        <input type="text" class="py-3 px-3 rounded bg-gray-100" type="text" name="code" value="<%= @code %>" placeholder="Enter code..." autocomplete="off" />
+        <button type="submit" phx-disable-with="Verifying code..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Verify</button>
+      </form>
+
+    <% @success -> %>
+      <h2 class="text-xl">Good job?!</h2>
+
+  <% end %>
+  </div>
+</div>

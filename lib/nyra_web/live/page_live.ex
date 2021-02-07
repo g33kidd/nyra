@@ -3,7 +3,6 @@ defmodule NyraWeb.PageLive do
 
   alias Nyra.Bouncer
   alias Nyra.Accounts
-  alias Nyra.Accounts.User
 
   @welcome_msg "Thanks for joining Nyra! We're currently in Beta, so please let us know what you think ^_^"
   @welcome_back "Welcome back!"
@@ -14,7 +13,9 @@ defmodule NyraWeb.PageLive do
 
     assigns = [
       email: "",
-      code: "",
+      generated_code: nil,
+      code: nil,
+      code_input: "",
       changeset: user_changeset,
       error_message: "",
       awaiting_code: nil,
@@ -33,35 +34,43 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def handle_event("verify", %{"code" => code}, socket) do
-    IO.inspect(Bouncer.is_cool?(code))
+    socket =
+      case verify_code(code, socket.assigns.generated_code) do
+        :ok ->
+          socket
+          |> assign(success: true)
 
-    case Bouncer.is_cool?(code) do
-      :ok -> {:noreply, socket |> assign(success: true)}
-      {:error, msg} -> {:noreply, socket |> assign(error_message: msg)}
-      nil -> {:noreply, socket |> assign(error_message: "idk")}
-    end
+        :invalid ->
+          socket
+          |> assign(error_message: "Invalid code.")
+      end
+
+    {:noreply, socket}
   end
 
+  def verify_code(input, real), do: if(input == real, do: :ok, else: :invalid)
+
   defp authenticate(socket, email) do
+    code = Bouncer.generate_code(email)
+    socket = assign(socket, generated_code: code)
+
     case Accounts.find_or_create_user(%{"email" => email}) do
-      {:created, user} -> handle_no_user(socket, user)
-      {:ok, user} -> handle_with_user(socket, user)
+      {:created, user} -> handle_no_user(socket, {code, user})
+      {:ok, user} -> handle_with_user(socket, {code, user})
       {:error, changeset} -> {:error, changeset}
     end
   end
 
   # Modifies and returns a new socket with information regarding an existing user.
-  defp handle_with_user(socket, user) do
-    with {:ok, code} <- Bouncer.guestlist(socket.id) do
-      Nyra.Emails.login_link(code, user)
-      |> Nyra.Mailer.deliver_later()
+  defp handle_with_user(socket, {code, user}) do
+    Nyra.Emails.login_link(code, user)
+    |> Nyra.Mailer.deliver_later()
 
-      socket
-      |> put_flash(:welcome_back, @welcome_back)
-      |> assign(new_user: false)
-      |> assign(current_user: user)
-      |> assign(awaiting_code: true)
-    end
+    socket
+    |> put_flash(:welcome_back, @welcome_back)
+    |> assign(new_user: false)
+    |> assign(current_user: user)
+    |> assign(awaiting_code: true)
   end
 
   defp handle_no_user(socket, user) do
