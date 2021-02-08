@@ -12,72 +12,80 @@ defmodule NyraWeb.PageLive do
     user_changeset = Accounts.create_user_changeset()
 
     assigns = [
-      email: "",
+      # Private stuff
       generated_code: nil,
-      code: nil,
+      user_changeset: user_changeset,
+
+      # Text Input Fields
+      email: "",
       code_input: "",
-      changeset: user_changeset,
-      error_message: "",
-      awaiting_code: nil,
-      current_user: nil,
-      new_user: nil,
-      success: false
+
+      # Welcome Message when authentication finishes.
+      welcome_message: "",
+      welcome_type: :new_user,
+
+      # Error state
+      error: nil,
+
+      # States
+      # Possible values | :init, :awaiting_code, :authenticated, :error, :timeout, :account_created
+      current_state: :init,
+      # :new, :existing
+      user_type: :new
     ]
 
-    {:ok, assign(socket, assigns)}
+    socket =
+      socket
+      |> assign(assigns)
+
+    {:ok, socket}
   end
 
   @impl true
   def handle_event("authenticate", %{"email" => email}, socket) do
-    {:noreply, authenticate(socket, email)}
+    code = Bouncer.generate_code(email)
+
+    socket =
+      case Accounts.find_or_create_user(%{"email" => email}) do
+        {:created, user} ->
+          socket
+          |> assign(current_state: :awaiting_code)
+          |> assign(current_user: user)
+          |> assign(user_type: :new)
+
+        {:ok, user} ->
+          socket
+          |> assign(current_state: :awaiting_code)
+          |> assign(current_user: user)
+          |> assign(uesr_type: :existing)
+
+        {:error, changeset} ->
+          socket
+          |> assign(error: changeset.errors)
+      end
+      |> assign(generated_code: code)
+
+    if socket.assigns.current_state == :awaiting_code and socket.assigns.current_user != nil do
+      Nyra.Emails.login_link(code, socket.assigns.current_user)
+      |> Nyra.Mailer.deliver_later()
+    end
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("verify", %{"code" => code}, socket) do
     socket =
-      case verify_code(code, socket.assigns.generated_code) do
+      case if(code == socket.assigns.generated_code, do: :ok, else: :invalid) do
         :ok ->
           socket
-          |> assign(success: true)
+          |> assign(current_state: :authenticated)
 
         :invalid ->
           socket
-          |> assign(error_message: "Invalid code.")
+          |> assign(error: "Invalid code.")
       end
 
     {:noreply, socket}
-  end
-
-  def verify_code(input, real), do: if(input == real, do: :ok, else: :invalid)
-
-  defp authenticate(socket, email) do
-    code = Bouncer.generate_code(email)
-    socket = assign(socket, generated_code: code)
-
-    case Accounts.find_or_create_user(%{"email" => email}) do
-      {:created, user} -> handle_no_user(socket, {code, user})
-      {:ok, user} -> handle_with_user(socket, {code, user})
-      {:error, changeset} -> {:error, changeset}
-    end
-  end
-
-  # Modifies and returns a new socket with information regarding an existing user.
-  defp handle_with_user(socket, {code, user}) do
-    Nyra.Emails.login_link(code, user)
-    |> Nyra.Mailer.deliver_later()
-
-    socket
-    |> put_flash(:welcome_back, @welcome_back)
-    |> assign(new_user: false)
-    |> assign(current_user: user)
-    |> assign(awaiting_code: true)
-  end
-
-  defp handle_no_user(socket, user) do
-    socket
-    |> put_flash(:welcome, @welcome_msg)
-    |> assign(new_user: true)
-    |> assign(awaiting_code: true)
-    |> assign(current_user: user)
   end
 end

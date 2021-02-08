@@ -16,7 +16,7 @@ module.exports = {
         'slab': ['Roboto Slab', 'sans-serif'],
         'roboto': ['Roboto', 'sans-serif'],
         'condensed': ['Roboto Condensed', 'sans-serif'],
-        'montserrate': ['Montserrate', 'sans-serif']
+        'montserrat': ['Montserrat', 'sans-serif']
       },
     },
   },

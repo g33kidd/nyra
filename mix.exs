@@ -19,7 +19,7 @@ defmodule Nyra.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Nyra.Application, [:bamboo]},
+      mod: {Nyra.Application, [:bamboo, :plug_attack]},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -47,7 +47,8 @@ defmodule Nyra.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:bamboo, "~> 1.6"}
+      {:bamboo, "~> 1.6"},
+      {:plug_attack, "~> 0.4.2"}
     ]
   end
 

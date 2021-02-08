@@ -2,7 +2,7 @@
 
   <%# Header section, branding... %>
   <div class="mx-auto">
-    <h1 class="bg-gradient-to-r font-bold font-montserrate text-gradient from-nyra-pink to-nyra-orange text-5xl pb-1">
+    <h1 class="bg-gradient-to-r font-bold font-montserrat text-gradient from-nyra-pink to-nyra-orange text-5xl pb-1">
       nyra
     </h1>
 

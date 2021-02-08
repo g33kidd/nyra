@@ -1,7 +1,7 @@
-<div class="container px-8 py-4 flex mx-auto">
+<div class="px-6 py-4 flex mx-auto">
 
   <div class="sm:w-full lg:w-1/3 md:w-1/2">
-    <h1 class="bg-gradient-to-r font-bold font-montserrate text-gradient from-nyra-pink to-nyra-orange text-5xl pb-1">
+    <h1 class="bg-gradient-to-r font-bold font-montserrat text-gradient from-nyra-pink to-nyra-orange text-5xl pb-1">
       nyra
     </h1>
 
@@ -12,35 +12,66 @@
     <p class="font-robotos mt-12">
       So I kind of made this site because I like talking to people, it's a fun experiment to build something like an Anonymous Chat app as I feel like there are a lot of problems to solve to get it right. Enjoy!
     </p>
+
   </div>
 
-  <div class="sm:w-full lg:w-2/3 md:w-full bg-gray-50">
-  <%= cond do %>
+  <div class="sm:w-full lg:w-2/3 md:w-full">
+  <div class="flex items-center h-52">
+  <%= case @current_state do %>
 
-      <%# Start. %>
-      <% is_nil(@awaiting_code) -> %>
-        <form phx-submit="authenticate">
-          <input class="py-3 px-3 rounded bg-gray-100" type="email" name="email" value="<%= @email %>" placeholder="Email Address" autocomplete="on" />
-          <button type="submit" phx-disable-with="Working..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
-        </form>
+    <%# Init State %>
+    <%= :init -> %>
+      <form phx-submit="authenticate">
+        <input
+          class="py-3 px-3 rounded bg-gray-100"
+          type="email"
+          name="email"
+          value="<%= @email %>"
+          placeholder="Email Address"
+          autocomplete="off" />
+        <button
+          type="submit"
+          phx-disable-with="Working..."
+          class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
+      </form>
 
-      <%# User is waiting for a code. %>
-      <% @awaiting_code -> %>
-        <div>awaiting code...</div>
-        <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
-        <div>if you leave this page your session will be terminated.</div>
+      <%# <div>awaiting code...</div>
+      <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
+      <div>if you leave this page your session will be terminated.</div> %>
 
-      <%# Most likely if an email has already been used. %>
-      <%= @error_message %>
-        <form phx-submit="verify">
-          <div>Random Username <%= @changeset.changes.username %></div>
-          <input type="text" class="py-3 px-3 rounded bg-gray-100" type="text" name="code" value="<%= @code %>" placeholder="Enter code..." autocomplete="off" />
-          <button type="submit" phx-disable-with="Verifying code..." class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Verify</button>
-        </form>
+    <%# User is waiting for a code. %>
+    <%= :awaiting_code -> %>
+      <form phx-submit="verify">
+        <div>Random Username <%= @changeset.changes.username %></div>
+        <input
+          type="text"
+          class="py-3 px-3 rounded bg-gray-100"
+          type="text"
+          name="code"
+          value="<%= @code %>"
+          placeholder="Enter code..."
+          autocomplete="off" />
+        <button
+          type="submit"
+          phx-disable-with="Verifying code..."
+          class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Verify</button>
+      </form>
 
-      <% @success -> %>
-        <h2 class="text-xl">Good job?!</h2>
+    <%= :authenticated -> %>
+
+    <%# When an error occurs! %>
+    <%= :error -> %>
+      <%#  %>
+
+    <%# This is really only the case when the toke expires... %>
+    <%= :timeout -> %>
+
+    <%# Most likely if an email has already been used. %>
+    <% :error -> %>
+
+
 
   <% end %>
+  </div>
   </div>
 </div>
