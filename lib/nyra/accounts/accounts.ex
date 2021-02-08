@@ -22,14 +22,17 @@ defmodule Nyra.Accounts do
     |> User.changeset(%{username: generate_username(), email: generate_username()})
   end
 
-  def find_or_create_user(%{"email" => email}) do
+  def find_or_create_user(%{"email" => email}, username \\ nil) do
     case get_user_by(email: email) do
       {:ok, user} ->
         {:ok, user}
 
       {:error, :not_found} ->
         %User{}
-        |> User.changeset(%{username: generate_username(), email: email})
+        |> User.changeset(%{
+          username: if(username == nil, do: generate_username(), else: username),
+          email: email
+        })
         |> Repo.insert()
     end
   end

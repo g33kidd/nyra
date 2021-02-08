@@ -26,7 +26,7 @@
           class="py-3 px-3 rounded bg-gray-100"
           type="email"
           name="email"
-          value="<%= @email %>"
+          value="<%= @email_input %>"
           placeholder="Email Address"
           autocomplete="off" />
         <button
@@ -42,13 +42,15 @@
     <%# User is waiting for a code. %>
     <%= :awaiting_code -> %>
       <form phx-submit="verify">
-        <div>Random Username <%= @changeset.changes.username %></div>
+        <%= if @user_type == :new do %>
+          <div>Random Username <%= @generated_username %></div>
+        <% end %>
         <input
           type="text"
           class="py-3 px-3 rounded bg-gray-100"
           type="text"
           name="code"
-          value="<%= @code %>"
+          value="<%= @code_input %>"
           placeholder="Enter code..."
           autocomplete="off" />
         <button
@@ -58,17 +60,14 @@
       </form>
 
     <%= :authenticated -> %>
-
-    <%# When an error occurs! %>
-    <%= :error -> %>
-      <%#  %>
+      <p>Good job you are in!</p>
+      <p>Setting up...</p>
 
     <%# This is really only the case when the toke expires... %>
-    <%= :timeout -> %>
+    <% :timeout -> %>
 
     <%# Most likely if an email has already been used. %>
     <% :error -> %>
-
 
 
   <% end %>
