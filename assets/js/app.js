@@ -36,3 +36,4 @@ liveSocket.connect()
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 
+// TODO session/plug/assigns debugger for local development.

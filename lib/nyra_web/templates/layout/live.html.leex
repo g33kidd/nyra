@@ -1,4 +1,4 @@
-<main role="main">
+<main role="main" class="min-h-screen flex">
   <p class="alert alert-info" role="alert"
     phx-click="lv:clear-flash"
     phx-value-key="info"><%= live_flash(@flash, :info) %></p>
@@ -7,16 +7,35 @@
     phx-click="lv:clear-flash"
     phx-value-key="error"><%= live_flash(@flash, :error) %></p>
 
-  <%# <div class="flex">
-    <h1 class="inline-block bg-gradient-to-r font-bold font-montserrat text-gradient from-nyra-pink to-nyra-orange text-xl">
+  <div class="sm:w-full lg:w-1/3 md:w-1/2 py-4 px-6 relative">
+    <h1 class="bg-gradient-to-r font-bold font-montserrat text-gradient from-nyra-pink to-nyra-orange text-5xl pb-1">
       nyra
     </h1>
 
-    <p class="inline-block font-bold font-condensed text-sm mt-2">
+    <p class="font-bold font-condensed mt-2">
       Sub heading goes here.
     </p>
-  </div> %>
 
+    <p class="font-robotos mt-8">
+      So I kind of made this site because I like talking to people, it's a fun experiment to build something like an Anonymous Chat app as I feel like there are a lot of problems to solve to get it right. Enjoy!
+    </p>
 
-  <%= @inner_content %>
+    <p class="mt-4 text-sm font-slab font-black">Currently in Beta.</p>
+
+    <div class="absolute bottom-6">
+      <a class="w-full" target="_blank" href="https://www.buymeacoffee.com/g33kidd"><img class="w-56" src="https://img.buymeacoffee.com/button-api/?text=Support Nyra w/ Coffee&emoji=&slug=g33kidd&button_colour=FF5F5F&font_colour=ffffff&font_family=Poppins&outline_colour=000000&coffee_colour=FFDD00"></a>
+    </div>
+
+    <form action="/session/destroy" method="POST">
+      <input type="hidden" name="_csrf_token" value="<%= Plug.CSRFProtection.get_csrf_token() %>">
+      <button
+        type="submit"
+        phx-disable-with="Working..."
+        class="text-nyra-pink-400 hover:text-nyra-pink-300 font-bold uppercase mt-12">Destroy session</button>
+    </form>
+  </div>
+
+  <div class="sm:w-full lg:w-2/3 md:w-full px-6 py-4">
+    <%= @inner_content %>
+  </div>
 </main>

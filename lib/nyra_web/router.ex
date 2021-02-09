@@ -17,13 +17,19 @@ defmodule NyraWeb.Router do
   scope "/", NyraWeb do
     pipe_through :browser
 
+    get "/session/:token", SessionController, :create, as: :session
+    post "/session/destroy", SessionController, :destroy, as: :session
+
     live "/", PageLive, :index
+    live "/about", PageLive, :about
+
+    live "/app", AppLive, :index
   end
 
   # Other scopes may use custom stacks.
-  scope "/api", NyraWeb do
-    pipe_through :api
-  end
+  # scope "/api", NyraWeb do
+  #   pipe_through :api
+  # end
 
   # Enables LiveDashboard only for development
   #

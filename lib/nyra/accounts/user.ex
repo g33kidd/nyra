@@ -20,11 +20,9 @@ defmodule Nyra.Accounts.User do
     |> unique_constraint(:email)
   end
 
-  def change_username(changeset, username) do
-    put_change(changeset, :username, username)
-  end
+  def change_username(changeset, username), do: put_change(changeset, :username, username)
 
-  def change_email(changeset, email) do
-    put_change(changeset, :email, email)
-  end
+  def change_email(changeset, email), do: put_change(changeset, :email, email)
+
+  def change_token(changeset, token), do: put_change(changeset, :token, token)
 end

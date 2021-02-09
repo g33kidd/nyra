@@ -21,6 +21,7 @@ config :nyra, NyraWeb.Endpoint,
   http: [port: 4000],
   debug_errors: true,
   code_reloader: true,
+  secret_key_base: "6lJRL4SDP6TGnx3tAU0I9bpqP0WbxYNeDDC48GRPcv6iKXJgKEjnTjZKpKgxqFYr",
   check_origin: false,
   watchers: [
     node: [

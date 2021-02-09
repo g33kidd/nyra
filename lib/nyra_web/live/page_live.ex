@@ -1,21 +1,18 @@
 defmodule NyraWeb.PageLive do
   use NyraWeb, :live_view
 
-  alias Nyra.Bouncer
-  alias Nyra.Accounts
-
-  @welcome_msg "Thanks for joining Nyra! We're currently in Beta, so please let us know what you think ^_^"
-  @welcome_back "Welcome back!"
+  alias NyraWeb.Router, as: Routes
+  alias Nyra.{Bouncer, Accounts}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     assigns = [
       # Private stuff
-      generated_username: "",
+      generated_username: Accounts.generate_username(),
       generated_code: nil,
 
       # Text Input Fields
-      email_input: "",
+      email_input: "yo@gmail.com",
       code_input: "",
 
       # Welcome Message when authentication finishes.
@@ -25,19 +22,18 @@ defmodule NyraWeb.PageLive do
       # Error state
       error: nil,
 
-      # States
-      # Possible values | :init, :awaiting_code, :authenticated, :error, :timeout, :account_created
+      # current_state | :init, :awaiting_code, :authenticated, :error, :timeout, :account_created
+      # user_type | :new, :existing
       current_state: :init,
-      # :new, :existing
       user_type: :new
     ]
 
-    socket =
-      socket
-      |> assign(assigns)
-      |> assign(generated_username: Accounts.generate_username())
-
-    {:ok, socket}
+    # Redirects user to the app if they're already authenticated.
+    if session["token"] do
+      {:ok, redirect(socket, to: Routes.Helpers.app_path(socket, :index))}
+    else
+      {:ok, assign(socket, assigns)}
+    end
   end
 
   @impl true
@@ -56,7 +52,7 @@ defmodule NyraWeb.PageLive do
           socket
           |> assign(current_state: :awaiting_code)
           |> assign(current_user: user)
-          |> assign(uesr_type: :existing)
+          |> assign(user_type: :existing)
 
         {:error, changeset} ->
           socket
@@ -74,18 +70,17 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def handle_event("verify", %{"code" => code}, socket) do
-    socket =
-      case if(code == socket.assigns.generated_code, do: :ok, else: :invalid) do
-        :ok ->
-          socket
-          |> assign(current_state: :authenticated)
+    case if(code == socket.assigns.generated_code, do: :ok, else: :invalid) do
+      :ok ->
+        token = Phoenix.Token.sign(NyraWeb.Endpoint, "user token", socket.assigns.current_user.id)
 
-        :invalid ->
-          socket
-          |> assign(current_state: :awaiting_code)
-          |> assign(error: "Invalid code.")
-      end
+        {:noreply, redirect(socket, to: Routes.Helpers.session_path(socket, :create, token))}
 
-    {:noreply, socket}
+      :invalid ->
+        {:noreply,
+         socket
+         |> assign(current_state: :awaiting_code)
+         |> assign(error: "Invalid code.")}
+    end
   end
 end

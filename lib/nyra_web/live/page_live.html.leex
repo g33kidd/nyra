@@ -1,76 +1,75 @@
-<div class="px-6 py-4 flex mx-auto">
+<div class="bg-gray-50 px-8 py-8 rounded">
 
-  <div class="sm:w-full lg:w-1/3 md:w-1/2">
-    <h1 class="bg-gradient-to-r font-bold font-montserrat text-gradient from-nyra-pink to-nyra-orange text-5xl pb-1">
-      nyra
-    </h1>
+  <h1 class="text-xl font-black font-montserrat">Authenticate</h1>
+  <p class="mt-8 mb-4">Complete the steps below to get access to Nyra. We've made this process simple: just enter your email address and enter the code provided.</p>
+  <p class="mb-8 font-bold text-xs font-condensed">Note: Your email address is not shared with anybody.</p>
 
-    <p class="font-bold font-condensed mt-2">
-      Sub heading goes here.
-    </p>
+<%= case @current_state do %>
 
-    <p class="font-robotos mt-12">
-      So I kind of made this site because I like talking to people, it's a fun experiment to build something like an Anonymous Chat app as I feel like there are a lot of problems to solve to get it right. Enjoy!
-    </p>
+  <%# Init State %>
+  <%= :init -> %>
+    <form phx-submit="authenticate">
 
-  </div>
+      <div class="bg-gradient-to-br from-nyra-pink-300 to-nyra-pink-400 rounded flex w-96">
+      <input
+        class="py-4 px-6 rounded outline-none text-white bg-transparent flex-1 font-roboto"
+        type="email"
+        name="email"
+        value="<%= @email_input %>"
+        placeholder="Email Address"
+        autocomplete="off" />
+      <button
+        type="submit"
+        phx-disable-with="Working..."
+        class="py-4 px-6 font-bold rounded text-nyra-pink-50 hover:text-white transition-all transform duration-150 font-condensed">LOGIN</button>
+      </div>
+    </form>
 
-  <div class="sm:w-full lg:w-2/3 md:w-full">
-  <div class="flex items-center h-52">
-  <%= case @current_state do %>
-
-    <%# Init State %>
-    <%= :init -> %>
-      <form phx-submit="authenticate">
-        <input
-          class="py-3 px-3 rounded bg-gray-100"
-          type="email"
-          name="email"
-          value="<%= @email_input %>"
-          placeholder="Email Address"
-          autocomplete="off" />
-        <button
-          type="submit"
-          phx-disable-with="Working..."
-          class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Login</button>
-      </form>
-
-      <%# <div>awaiting code...</div>
-      <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
-      <div>if you leave this page your session will be terminated.</div> %>
-
-    <%# User is waiting for a code. %>
-    <%= :awaiting_code -> %>
-      <form phx-submit="verify">
-        <%= if @user_type == :new do %>
-          <div>Random Username <%= @generated_username %></div>
-        <% end %>
-        <input
-          type="text"
-          class="py-3 px-3 rounded bg-gray-100"
-          type="text"
-          name="code"
-          value="<%= @code_input %>"
-          placeholder="Enter code..."
-          autocomplete="off" />
-        <button
-          type="submit"
-          phx-disable-with="Verifying code..."
-          class="py-3 hover:text-blue-300 font-bold px-3 rounded text-blue-400">Verify</button>
-      </form>
-
-    <%= :authenticated -> %>
-      <p>Good job you are in!</p>
-      <p>Setting up...</p>
-
-    <%# This is really only the case when the toke expires... %>
-    <% :timeout -> %>
-
-    <%# Most likely if an email has already been used. %>
-    <% :error -> %>
+    <%# <div>awaiting code...</div>
+    <div>please enter the code sent to your email. it will expire in 30 minutes.</div>
+    <div>if you leave this page your session will be terminated.</div> %>
 
 
-  <% end %>
-  </div>
-  </div>
+  <%# User is waiting for a code. %>
+  <%= :awaiting_code -> %>
+
+    <form phx-submit="verify">
+      <%= if @user_type == :new do %>
+        <p class="mb-4 font-bold font-montserrat text-lg">I shall name you <strong><%= @generated_username %></strong></p>
+      <%= else %>
+        <p class="mb-4 font-bold font-montserrat text-lg">🚀 Welcome back! Just check your email for the code..</p>
+      <% end %>
+
+      <div class="bg-gradient-to-br from-nyra-blue-100 to-nyra-blue-200 rounded flex w-96">
+      <input
+        class="py-4 px-6 rounded outline-none text-white bg-transparent flex-1 font-roboto"
+        type="text"
+        name="code"
+        value="<%= @code_input %>"
+        placeholder="Enter code here.."
+        autocomplete="off" />
+      <button
+        type="submit"
+        phx-disable-with="Verifying code..."
+        class="py-4 px-6 font-bold rounded text-nyra-pink-50 hover:text-white transition-all transform duration-150 font-condensed">VERIFY</button>
+      </div>
+
+      <%= if !is_nil(@error) do %>
+        <p class="text-red-400 font-bold text-sm py-2">The code might be expired or invalid.</p>
+      <% end %>
+
+    </form>
+
+  <%= :authenticated -> %>
+    <p>Good job you are in!</p>
+    <p>Setting up...</p>
+
+  <%# This is really only the case when the toke expires... %>
+  <% :timeout -> %>
+
+  <%# Most likely if an email has already been used. %>
+  <% :error -> %>
+
+
+<% end %>
 </div>
