@@ -17,7 +17,8 @@ defmodule Nyra.Application do
       NyraWeb.Endpoint,
       # Start a worker by calling: Nyra.Worker.start_link(arg)
       # {Nyra.Worker, arg}
-      Nyra.Bouncer
+      # Nyra.Bouncer
+      {PlugAttack.Storage.Ets, name: Nyra.PlugAttack.Storage, clean_period: 60_000}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

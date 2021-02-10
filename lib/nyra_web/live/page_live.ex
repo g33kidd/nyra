@@ -1,74 +1,86 @@
 defmodule NyraWeb.PageLive do
   use NyraWeb, :live_view
 
-  alias Nyra.Bouncer
-  alias Nyra.Accounts
-  alias Nyra.Accounts.User
-
-  @welcome_msg "Thanks for joining Nyra! We're currently in Beta, so please let us know what you think ^_^"
-  @welcome_back "Welcome back!"
+  alias NyraWeb.Router, as: Routes
+  alias Nyra.{Bouncer, Accounts}
 
   @impl true
-  def mount(_params, _session, socket) do
-    user_changeset = Accounts.create_user_changeset()
-
+  def mount(_params, session, socket) do
     assigns = [
-      email: "",
-      code: "",
-      changeset: user_changeset,
-      error_message: "",
-      awaiting_code: nil,
-      current_user: nil,
-      new_user: nil,
-      success: false
+      # Private stuff
+      generated_username: Accounts.generate_username(),
+      generated_code: nil,
+
+      # Text Input Fields
+      email_input: "yo@gmail.com",
+      code_input: "",
+
+      # Welcome Message when authentication finishes.
+      welcome_message: "",
+      welcome_type: :new_user,
+
+      # Error state
+      error: nil,
+
+      # current_state | :init, :awaiting_code, :authenticated, :error, :timeout, :account_created
+      # user_type | :new, :existing
+      current_state: :init,
+      user_type: :new
     ]
 
-    {:ok, assign(socket, assigns)}
+    # Redirects user to the app if they're already authenticated.
+    if session["token"] do
+      {:ok, redirect(socket, to: Routes.Helpers.app_path(socket, :index))}
+    else
+      {:ok, assign(socket, assigns)}
+    end
   end
 
   @impl true
   def handle_event("authenticate", %{"email" => email}, socket) do
-    {:noreply, authenticate(socket, email)}
+    code = Bouncer.generate_code(socket.id)
+
+    socket =
+      case Accounts.find_or_create_user(%{"email" => email}, socket.assigns.generated_username) do
+        {:created, user} ->
+          socket
+          |> assign(current_state: :awaiting_code)
+          |> assign(current_user: user)
+          |> assign(user_type: :new)
+
+        {:ok, user} ->
+          socket
+          |> assign(current_state: :awaiting_code)
+          |> assign(current_user: user)
+          |> assign(user_type: :existing)
+
+        {:error, changeset} ->
+          socket
+          |> assign(error: changeset.errors)
+      end
+      |> assign(generated_code: code)
+
+    if socket.assigns.current_state == :awaiting_code and socket.assigns.current_user != nil do
+      Nyra.Emails.login_link(code, socket.assigns.current_user)
+      |> Nyra.Mailer.deliver_later()
+    end
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("verify", %{"code" => code}, socket) do
-    IO.inspect(Bouncer.is_cool?(code))
+    case if(code == socket.assigns.generated_code, do: :ok, else: :invalid) do
+      :ok ->
+        token = Phoenix.Token.sign(NyraWeb.Endpoint, "user token", socket.assigns.current_user.id)
 
-    case Bouncer.is_cool?(code) do
-      :ok -> {:noreply, socket |> assign(success: true)}
-      {:error, msg} -> {:noreply, socket |> assign(error_message: msg)}
-      nil -> {:noreply, socket |> assign(error_message: "idk")}
+        {:noreply, redirect(socket, to: Routes.Helpers.session_path(socket, :create, token))}
+
+      :invalid ->
+        {:noreply,
+         socket
+         |> assign(current_state: :awaiting_code)
+         |> assign(error: "Invalid code.")}
     end
-  end
-
-  defp authenticate(socket, email) do
-    case Accounts.find_or_create_user(%{"email" => email}) do
-      {:created, user} -> handle_no_user(socket, user)
-      {:ok, user} -> handle_with_user(socket, user)
-      {:error, changeset} -> {:error, changeset}
-    end
-  end
-
-  # Modifies and returns a new socket with information regarding an existing user.
-  defp handle_with_user(socket, user) do
-    with {:ok, code} <- Bouncer.guestlist(socket.id) do
-      Nyra.Emails.login_link(code, user)
-      |> Nyra.Mailer.deliver_later()
-
-      socket
-      |> put_flash(:welcome_back, @welcome_back)
-      |> assign(new_user: false)
-      |> assign(current_user: user)
-      |> assign(awaiting_code: true)
-    end
-  end
-
-  defp handle_no_user(socket, user) do
-    socket
-    |> put_flash(:welcome, @welcome_msg)
-    |> assign(new_user: true)
-    |> assign(awaiting_code: true)
-    |> assign(current_user: user)
   end
 end
