@@ -4,6 +4,8 @@
 import "../css/app.scss"
 
 import 'typeface-roboto'
+import 'typeface-roboto-slab'
+import 'typeface-roboto-condensed'
 import 'typeface-montserrat'
 
 // webpack automatically bundles all modules in your

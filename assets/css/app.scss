@@ -1,104 +1,98 @@
+// ʕ•́ᴥ•̀ʔっ
+
 /* This file is for your main application css. */
-// @import "./phoenix.css";
 @import "../node_modules/nprogress/nprogress.css";
-@import "./ui.scss";
 
-// Tailwind imports.
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+// Global variables.
+@import "vars.scss";
 
-@layer utilities {
-  .text-gradient {
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+// Import all modules here..
+@import "ui.scss";
+@import "liveview.scss";
+@import "typography.scss";
+@import "reset.scss";
+
+.app {
+  font-family: "Roboto", sans-serif;
+
+  height: 100vh;
+
+  width: 960px;
+  margin: 0 auto;
+
+  display: flex;
+
+  padding: 1rem 1.2rem;
+
+  .sidebar {
+    position: relative;
+    width: 400px;
+    margin-right: 3rem;
+
+    .sidebar-footer {
+      position: absolute;
+      bottom: 0;
+      width: 250px;
+      a {
+        width: 100%;
+        img {
+          width: 100%;
+        }
+      }
+    }
+
+    .logo {
+      margin-bottom: 0.5rem;
+
+      font-family: "Roboto", sans-serif;
+      font-weight: 600;
+      font-size: 3rem;
+
+      /* Fallback: Set a background color. */
+      background-color: $pink;
+
+      /* Create the gradient. */
+      background-image: linear-gradient(45deg, $pink, $orange);
+
+      /* Set the background size and repeat properties. */
+      background-size: 100%;
+      background-repeat: repeat;
+
+      /* Use the text as a mask for the background. */
+      /* This will show the gradient as a text color rather than element bg. */
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      -moz-background-clip: text;
+      -moz-text-fill-color: transparent;
+
+      sup {
+        -webkit-text-fill-color: #000;
+        font-family: "Roboto Condensed", sans-serif;
+      }
+    }
+
+    .logo-subtext {
+      margin-bottom: 2.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .description {
+      font-size: 1rem;
+      font-family: "Roboto Condensed", serif;
+    }
   }
 }
 
-/* LiveView specific classes for your customizations */
-.phx-no-feedback.invalid-feedback,
-.phx-no-feedback .invalid-feedback {
-  display: none;
-}
+// Tailwind imports.
+// @tailwind base;
+// @tailwind components;
+// @tailwind utilities;
 
-.phx-click-loading {
-  opacity: 0.5;
-  transition: opacity 1s ease-out;
-}
-
-.phx-disconnected{
-  cursor: wait;
-}
-.phx-disconnected *{
-  pointer-events: none;
-}
-
-.phx-modal {
-  opacity: 1!important;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgb(0,0,0);
-  background-color: rgba(0,0,0,0.4);
-}
-
-.phx-modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-}
-
-.phx-modal-close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.phx-modal-close:hover,
-.phx-modal-close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-
-/* Alerts and form errors */
-.alert {
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-}
-.alert-info {
-  color: #31708f;
-  background-color: #d9edf7;
-  border-color: #bce8f1;
-}
-.alert-warning {
-  color: #8a6d3b;
-  background-color: #fcf8e3;
-  border-color: #faebcc;
-}
-.alert-danger {
-  color: #a94442;
-  background-color: #f2dede;
-  border-color: #ebccd1;
-}
-.alert p {
-  margin-bottom: 0;
-}
-.alert:empty {
-  display: none;
-}
-.invalid-feedback {
-  color: #a94442;
-  display: block;
-  margin: -1rem 0 2rem;
-}
+// @layer utilities {
+//   .text-gradient {
+//     background-clip: text;
+//     -webkit-text-fill-color: transparent;
+//   }
+// }

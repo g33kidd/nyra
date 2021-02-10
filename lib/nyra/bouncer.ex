@@ -89,8 +89,8 @@ defmodule Nyra.Bouncer do
 
   def expired?(time), do: time > :os.system_time(:seconds)
 
-  def generate_code(salt \\ "crypto") do
-    :crypto.hash(:sha256, salt)
+  def generate_code(data \\ "crypto") do
+    :crypto.hash(:sha256, data)
     |> Base.encode64()
     |> String.to_charlist()
     |> Enum.shuffle()
