@@ -4,8 +4,6 @@ defmodule NyraWeb.AppLive do
   alias NyraWeb.Router, as: Routes
 
   def mount(_params, session, socket) do
-    IO.inspect(session)
-
     assigns = [
       username: "123"
     ]

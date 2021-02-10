@@ -2,7 +2,6 @@ defmodule NyraWeb.SessionController do
   use NyraWeb, :controller
 
   alias NyraWeb.Router, as: Routes
-  import Phoenix.LiveView.Controller, only: [live_render: 2]
 
   def create(conn, %{"token" => token} = _params) do
     case Phoenix.Token.verify(NyraWeb.Endpoint, "user token", token) do
@@ -15,8 +14,8 @@ defmodule NyraWeb.SessionController do
         |> configure_session(renew: true)
         |> redirect(to: "/app")
 
-      {:error, _err} ->
-        conn |> put_flash(:error, "Token isn't valid.")
+      {:error, err} ->
+        conn |> put_flash(:error, "Token isn't valid or expired. #{err}")
     end
   end
 
