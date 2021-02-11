@@ -1,7 +1,5 @@
 defmodule Nyra.Accounts do
-  @moduledoc """
-    Provides functions for dealing with accounts.
-  """
+  @moduledoc false
 
   import Ecto.Query
 
@@ -10,16 +8,6 @@ defmodule Nyra.Accounts do
 
   def get_users do
     User |> Repo.all()
-  end
-
-  def create_user do
-    create_user_changeset() |> Repo.insert()
-  end
-
-  def create_user_changeset do
-    # TODO this is a non-nononono FUCKk cant think of a better solution atm.
-    %User{}
-    |> User.changeset(%{username: generate_username(), email: generate_username()})
   end
 
   def update_token(%User{} = user, token) do

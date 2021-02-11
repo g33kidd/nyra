@@ -3,28 +3,19 @@
   <div class="content">
     <h1>Authentication</h1>
     <p class="text">
-      Complete the steps below to get access to Nyra. We've made this process simple: just enter your email address and enter the code provided.
+      Complete the steps below to get access to Nyra. We've made this process simple: just enter your email address and enter the code sent to your inbox.
     </p>
     <p class="text sub highlight">
       Note: Your email address is not shared with anybody.
     </p>
   </div>
 
-
-</article>
-
-
-
-
-<%= case @current_state do %>
+  <%= case @current_state do %>
 
   <%# Init State %>
   <%= :init -> %>
     <form phx-submit="authenticate">
-
-      <div class="bg-gradient-to-br from-nyra-pink-300 to-nyra-pink-400 rounded flex w-96">
       <input
-        class="py-4 px-6 rounded outline-none text-white bg-transparent flex-1 font-roboto"
         type="email"
         name="email"
         value="<%= @email_input %>"
@@ -32,24 +23,23 @@
         autocomplete="off" />
       <button
         type="submit"
-        phx-disable-with="Working..."
-        class="py-4 px-6 font-bold rounded text-nyra-pink-50 hover:text-white transition-all transform duration-150 font-condensed">LOGIN</button>
-      </div>
+        phx-disable-with="Working...">LOGIN</button>
     </form>
 
   <%# User is waiting for a code. %>
   <%= :awaiting_code -> %>
+    <%= if @user_type == :new do %>
+      <p>I shall name you <strong><%= @generated_username %></strong></p>
+    <%= else %>
+      <p>🚀 Welcome back! Just check your email for the code..</p>
+    <% end %>
+
+    <%= if !is_nil(@error) do %>
+      <p class="error">The code might be expired or invalid.</p>
+    <% end %>
 
     <form phx-submit="verify">
-      <%= if @user_type == :new do %>
-        <p class="mb-4 font-bold font-montserrat text-lg">I shall name you <strong><%= @generated_username %></strong></p>
-      <%= else %>
-        <p class="mb-4 font-bold font-montserrat text-lg">🚀 Welcome back! Just check your email for the code..</p>
-      <% end %>
-
-      <div class="bg-gradient-to-br from-nyra-blue-100 to-nyra-blue-200 rounded flex w-96">
       <input
-        class="py-4 px-6 rounded outline-none text-white bg-transparent flex-1 font-roboto"
         type="text"
         name="code"
         value="<%= @code_input %>"
@@ -57,15 +47,10 @@
         autocomplete="off" />
       <button
         type="submit"
-        phx-disable-with="Verifying code..."
-        class="py-4 px-6 font-bold rounded text-nyra-pink-50 hover:text-white transition-all transform duration-150 font-condensed">VERIFY</button>
-      </div>
-
-      <%= if !is_nil(@error) do %>
-        <p class="text-red-400 font-bold text-sm py-2">The code might be expired or invalid.</p>
-      <% end %>
-
+        phx-disable-with="Verifying code...">VERIFY</button>
     </form>
+
+
 
   <%= :authenticated -> %>
     <p>Good job you are in!</p>
@@ -79,4 +64,5 @@
 
 
 <% end %>
-</div>
+
+</article>

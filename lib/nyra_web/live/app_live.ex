@@ -12,10 +12,10 @@ defmodule NyraWeb.AppLive do
       socket
       |> assign(assigns)
 
-    if not is_nil(session["token"]) do
-      {:ok, socket}
-    else
+    if is_nil(session["token"]) do
       {:ok, redirect(socket, to: Routes.Helpers.page_path(socket, :index))}
+    else
+      {:ok, socket}
     end
   end
 end

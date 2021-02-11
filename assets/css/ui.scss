@@ -1,3 +1,56 @@
-input, button {
-	outline: none;
+@import "input.scss";
+@import "ui/auth.scss";
+
+.box {
+	// Default colors
+	// background: #f3f3f3;
+	color: #333;
+
+	border-radius: 0.5rem;
+
+	&.auth {
+		position: relative;
+		$border: 6px;
+		background-color: #fff;
+		color: #333;
+		box-sizing: border-box;
+		background-clip: padding-box; /* !importanté */
+		border: solid $border transparent; /* !importanté */
+
+		&:before {
+			content: "";
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			z-index: -1;
+			margin: -$border; /* !importanté */
+			border-radius: inherit; /* !importanté */
+			background: linear-gradient(-45deg, $pink, $orange);
+		}
+	}
+
+	.content {
+		padding: 1rem 1.4rem;
+
+		h1 {
+			font-family: $monts;
+			margin-bottom: 1rem;
+			font-size: 2rem;
+		}
+
+		.text {
+			font-size: 1.1rem;
+
+			&.sub {
+				font-size: 1rem !important;
+				margin-top: 1rem;
+			}
+
+			&.highlight {
+				font-weight: bold;
+			}
+		}
+	}
 }
