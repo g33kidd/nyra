@@ -1,41 +1,28 @@
 @import "input.scss";
 @import "ui/auth.scss";
 
+.centered {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 50vh;
+}
+
 .box {
-	// Default colors
-	// background: #f3f3f3;
 	color: #333;
 
-	border-radius: 0.5rem;
-
 	&.auth {
-		position: relative;
-		$border: 6px;
-		background-color: #fff;
-		color: #333;
-		box-sizing: border-box;
-		background-clip: padding-box; /* !importanté */
-		border: solid $border transparent; /* !importanté */
-
-		&:before {
-			content: "";
-			position: absolute;
-			top: 0;
-			right: 0;
-			bottom: 0;
-			left: 0;
-			z-index: -1;
-			margin: -$border; /* !importanté */
-			border-radius: inherit; /* !importanté */
-			background: linear-gradient(-45deg, $pink, $orange);
-		}
+		flex: 0 0 550px;
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.content {
-		padding: 1rem 1.4rem;
-
 		h1 {
 			font-family: $monts;
+			font-weight: 800;
+			text-transform: uppercase;
 			margin-bottom: 1rem;
 			font-size: 2rem;
 		}

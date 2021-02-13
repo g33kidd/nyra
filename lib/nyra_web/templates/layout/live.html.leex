@@ -1,21 +1,32 @@
 <main role="main" class="app">
 
-  <p class="alert alert-info" role="alert"
-    phx-click="lv:clear-flash"
-    phx-value-key="info"><%= live_flash(@flash, :info) %></p>
 
-  <p class="alert alert-danger" role="alert"
-    phx-click="lv:clear-flash"
-    phx-value-key="error"><%= live_flash(@flash, :error) %></p>
 
   <div class="sidebar">
+    <div class="alert-area">
+      <p class="alert alert-info" role="alert"
+        phx-click="lv:clear-flash"
+        phx-value-key="info"><%= live_flash(@flash, :info) %></p>
+
+      <p class="alert alert-danger" role="alert"
+        phx-click="lv:clear-flash"
+        phx-value-key="error"><%= live_flash(@flash, :error) %></p>
+    </div>
+
     <div class="logo">nyra<sup>beta</sup></div>
-    <div class="logo-subtext">Subtext should go here.</div>
+    <div class="logo-subtext">Fast anonymous chat.</div>
 
     <p class="description">
       So I kind of made this site because I like talking to people, it's a fun experiment to build something like
       an Anonymous Chat app as I feel like there are a lot of problems to solve to get it right. Enjoy!
     </p>
+
+    <form action="/kill" method="POST" class="pad">
+      <input type="hidden" name="_csrf_token" value="<%= Plug.CSRFProtection.get_csrf_token() %>">
+      <button
+        type="submit"
+        phx-disable-with="Verifying code...">KILL SESSION</button>
+    </form>
 
     <div class="sidebar-footer">
       <a target="_blank" href="https://www.buymeacoffee.com/g33kidd"><img src="https://img.buymeacoffee.com/button-api/?text=Support Nyra w/ Coffee&emoji=&slug=g33kidd&button_colour=FF5F5F&font_colour=ffffff&font_family=Poppins&outline_colour=000000&coffee_colour=FFDD00"></a>

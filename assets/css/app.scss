@@ -12,22 +12,27 @@
 @import "typography.scss";
 @import "reset.scss";
 
+// !NOTE
+// Normal padding size is 1rem. Also could be 1.2rem for vertical padding.
+
+// Ano[ny]mous [Ra]ndom Chat.
+
 .app {
   font-family: "Roboto", sans-serif;
-
   height: 100vh;
-
-  width: 960px;
   margin: 0 auto;
-
   display: flex;
 
-  padding: 1rem 1.2rem;
+  .inner-content {
+    flex: 1;
+  }
 
   .sidebar {
+    padding: 1rem 1rem;
+    background: #f3f3f3;
+    flex: 0 0 360px;
     position: relative;
     width: 400px;
-    margin-right: 3rem;
 
     .sidebar-footer {
       position: absolute;
@@ -48,6 +53,7 @@
       font-weight: 600;
       font-size: 3rem;
 
+      margin-top: -15px;
       /* Fallback: Set a background color. */
       background-color: $pink;
 
@@ -81,20 +87,9 @@
     }
 
     .description {
-      font-size: 1rem;
-      font-family: "Roboto Condensed", serif;
+      font-size: 0.9rem;
+      font-family: "Roboto", serif;
+      line-height: 1.4rem;
     }
   }
 }
-
-// Tailwind imports.
-// @tailwind base;
-// @tailwind components;
-// @tailwind utilities;
-
-// @layer utilities {
-//   .text-gradient {
-//     background-clip: text;
-//     -webkit-text-fill-color: transparent;
-//   }
-// }
