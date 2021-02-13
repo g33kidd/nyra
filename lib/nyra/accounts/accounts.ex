@@ -30,14 +30,14 @@ defmodule Nyra.Accounts do
             email: email
           })
 
-        case Repo.insert(changeset) do
+        case Repo.insert(changeset, returning: [:id]) do
           {:ok, new_user} -> {:created, new_user}
           {:error, error_changeset} -> {:error, error_changeset}
         end
     end
   end
 
-  def insert_user(changeset), do: Repo.insert(changeset)
+  def insert_user(changeset), do: Repo.insert(changeset, returning: [:id])
 
   def get_user_by(email: email) do
     case Repo.get_by(User, email: email) do

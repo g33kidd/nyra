@@ -2,6 +2,9 @@ defmodule Nyra.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  # Auto generate keys
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
+
   schema "users" do
     field :activated, :boolean, default: false
     field :email, :string
