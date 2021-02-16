@@ -8,4 +8,23 @@ defmodule NyraWeb.Presence do
   use Phoenix.Presence,
     otp_app: :nyra,
     pubsub_server: Nyra.PubSub
+
+  def track_user(pid, socket, data) do
+    track(pid, "lobby", socket.id, data)
+  end
+
+  def list_online(), do: list("lobby")
+
+  # def exists?([], nil), do: {:}
+  def exists?(devices, id) when is_binary(id) when is_map(devices) do
+    case Map.get(devices, id) do
+      nil -> false
+      %{} -> true
+    end
+  end
+
+  def handle_info(c, d) do
+    IO.inspect(c)
+    d
+  end
 end

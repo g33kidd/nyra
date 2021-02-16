@@ -16,6 +16,7 @@ defmodule Nyra.Application do
       NyraWeb.Endpoint,
       # Start a worker by calling: Nyra.Worker.start_link(arg)
       # {Nyra.Worker, arg}
+      NyraWeb.Presence,
       # Nyra.Bouncer
       {PlugAttack.Storage.Ets, name: Nyra.PlugAttack.Storage, clean_period: 60_000}
     ]

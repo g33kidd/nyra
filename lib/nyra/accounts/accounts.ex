@@ -10,6 +10,11 @@ defmodule Nyra.Accounts do
     User |> Repo.all()
   end
 
+  def get_user(id) do
+    User
+    |> Repo.get(id)
+  end
+
   def update_token(%User{} = user, token) do
     user
     |> User.changeset()
