@@ -92,13 +92,18 @@ defmodule NyraWeb.AppLive do
   Handles Phoenix socket broadcasts from the presence channel.
 
     1. Updates the current online users count.
-    2. Removes the user that just disconnected from the ENTIRE pool of users & chats.
+    2. Removes the user that just disconnected from the ENTIRE pool of users.
+    3.
+
   """
   @impl true
   def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: _payload}, socket) do
     presence_count =
       Presence.list_online()
       |> Enum.count()
+
+    # TODO handles payload.leaves && payload.joins
+    # Just because we really need to remove the user that's leaving from everything.
 
     {:noreply, assign(socket, online_users_count: presence_count)}
   end

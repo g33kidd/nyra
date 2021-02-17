@@ -32,8 +32,4 @@ defmodule Nyra.UserPool do
   def handle_info(:cleanup, state) do
     state
   end
-  
-  defp cleanup(%{ first | tail }) do
-    
-  end
 end
