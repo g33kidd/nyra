@@ -42,6 +42,24 @@ defmodule Nyra.Accounts do
     end
   end
 
+  @spec is_activated?(String.t()) :: :ok | {:error, :account_not_active}
+  def is_activated?(user_id) when is_binary(user_id) do
+    result =
+      from u in User,
+        where: u.id == ^user_id,
+        where: u.activated == true,
+        select: count(u.id)
+
+    result
+    |> Repo.all()
+    |> Enum.at(0)
+    |> is_activated?()
+  end
+
+  def is_activated?(0), do: {:error, :account_not_active}
+  def is_activated?(1), do: :ok
+  def is_activated?(_default), do: {:error, :account_not_active}
+
   def insert_user(changeset), do: Repo.insert(changeset, returning: [:id])
 
   def get_user_by(email: email) do

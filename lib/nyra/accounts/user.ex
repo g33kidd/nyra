@@ -1,6 +1,8 @@
 defmodule Nyra.Accounts.User do
   use Ecto.Schema
+
   import Ecto.Changeset
+  import Ecto.Query
 
   # Auto generate keys
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -21,6 +23,14 @@ defmodule Nyra.Accounts.User do
     |> validate_required([:email, :username])
     |> unique_constraint(:username)
     |> unique_constraint(:email)
+  end
+
+  def with_id(query, id) do
+    from u in query, where: u.id == ^id
+  end
+
+  def where_active(query) do
+    from u in query, where: u.active == true
   end
 
   def change_username(changeset, username), do: put_change(changeset, :username, username)

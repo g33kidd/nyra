@@ -12,6 +12,8 @@
 @import "typography.scss";
 @import "reset.scss";
 
+@import "dev.scss";
+
 // !NOTE
 // Normal padding size is 1rem. Also could be 1.2rem for vertical padding.
 
@@ -29,7 +31,6 @@
 
   .sidebar {
     padding: 1rem 1rem;
-    background: #f3f3f3;
     flex: 0 0 360px;
     position: relative;
     width: 400px;

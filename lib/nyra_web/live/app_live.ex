@@ -5,39 +5,7 @@ defmodule NyraWeb.AppLive do
   alias NyraWeb.{Router, Presence, Endpoint}
   alias Phoenix.Token
 
-  # ! note or question for later...
-  # this feels redundant? but I want the format a certain way for code readability so maybe not?
-  def is_connected?(socket), do: if(connected?(socket), do: :ok, else: {:error, :not_connected})
-
-  # This is a real user right?
-  @doc """
-  This is a real user right?
-  Okay from my perspective, if a user has passed all checks before this during a request then...
-  It's not right and someone is trying to do something? Maybe not necesssarily but there won't be a token.
-  """
-  def is_user_session?(%{"token" => token}) when is_binary(token) do
-    Token.verify(Endpoint, "user token", token)
-  end
-
-  def is_user_session?(%{"token" => token}) when is_nil(token), do: {:error, :no_token}
-
-  @doc """
-  Makes sure someone isn't trying to use the same account multiple places for spamming or botting
-  """
-  @spec ensure_single_device(String.t()) :: :ok | {:error, :device_exists}
-  def ensure_single_device(id) when is_binary(id) do
-    presences = Presence.list_online()
-
-    existing_device_count =
-      Enum.map(presences, fn {_socket_id, presence} -> fetch_id(presence) end)
-      |> Enum.count(fn user_id -> user_id == id end)
-
-    if(existing_device_count > 0, do: {:error, :device_exists}, else: :ok)
-  end
-
-  @doc "Grabs the user id from the Presence meta map"
-  def fetch_id(nil), do: nil
-  def fetch_id(%{metas: [first | _]}), do: first.current_user
+  import NyraWeb.LiveHelpers
 
   @doc """
 
@@ -67,9 +35,10 @@ defmodule NyraWeb.AppLive do
       )
 
     socket =
-      with :ok <- is_connected?(socket),
+      with true <- connected?(socket),
            {:ok, user_id} <- is_user_session?(session),
-           :ok <- ensure_single_device(user_id) do
+           :ok <- ensure_single_device(user_id),
+           :ok <- Accounts.is_activated?(user_id) do
         # Subscribe to the lobby and track this session in Presence
         Endpoint.subscribe("lobby")
 
@@ -90,19 +59,41 @@ defmodule NyraWeb.AppLive do
           loading: false
         ]
 
-        IO.inspect(assigns)
-
         assign(socket, assigns)
       else
-        {:error, :no_token} -> redirect(socket, to: Router.Helpers.page_path(socket, :index))
-        {:error, :device_exists} -> redirect(socket, to: Router.Helpers.page_path(socket, :index))
-        {:error, :not_connected} -> redirect(socket, to: Router.Helpers.page_path(socket, :index))
-        {:error, default_error} -> assign(socket, error: default_error)
+        {:error, :no_token} ->
+          redirect(socket, to: Router.Helpers.page_path(socket, :index))
+
+        {:error, :device_exists} ->
+          # TODO this should redirect to somewhere else.
+          redirect(socket, to: Router.Helpers.page_path(socket, :index))
+
+        # This should be the only case in which there is some boolean value.
+        # Other cases will be state information stored as a Tuple.
+        # also, this relates to [connected?/1]
+        false ->
+          socket
+
+        {:error, :account_not_active} ->
+          redirect(socket, to: Router.Helpers.page_path(socket, :index))
+
+        {:error, default_error} ->
+          assign(socket, error: default_error)
       end
 
     {:ok, socket}
   end
 
+  # Channel Messages
+
+  # Phoenix Presence Stuff
+
+  @doc """
+  Handles Phoenix socket broadcasts from the presence channel.
+
+    1. Updates the current online users count.
+    2. Removes the user that just disconnected from the ENTIRE pool of users & chats.
+  """
   @impl true
   def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: _payload}, socket) do
     presence_count =

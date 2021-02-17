@@ -1,0 +1,29 @@
+.dev-box {
+  background: #5e6472;
+  border-radius: 6px;
+  color: #aed9e0;
+  font-family: 'Hack', sans-serif;
+  font-size: 12px;
+  padding: 1rem 0.8rem 0.8rem 0.8rem;
+
+  h1 {
+    font-size: 15px;
+    margin-bottom: 0.8rem;
+    text-align: center;
+  }
+
+  form[class="session"] { 
+    button {
+    width: 100%;
+    background: #ffa69e;
+    padding: 1rem;
+    border-radius: 6px;
+    color: #333;
+    font-weight: bold;
+
+    &:hover {
+      background: darken(#ffa69e, 2%);
+    }
+  }
+}
+}
