@@ -36,14 +36,14 @@ defmodule NyraWeb.AppLive do
 
     socket =
       with true <- connected?(socket),
-           {:ok, user_id} <- is_user_session?(session),
-           :ok <- ensure_single_device(user_id),
-           :ok <- Accounts.is_activated?(user_id) do
+           {:ok, uuid} <- is_user_session?(session),
+           :ok <- ensure_single_device(uuid),
+           :ok <- Accounts.is_activated?(uuid) do
         # Subscribe to the lobby and track this session in Presence
         Endpoint.subscribe("lobby")
 
         Presence.track(self(), "lobby", socket.id, %{
-          current_user: user_id,
+          current_user: uuid,
           online_at: :os.system_time(:seconds)
         })
 
@@ -51,7 +51,7 @@ defmodule NyraWeb.AppLive do
           Presence.list_online()
           |> Enum.count()
 
-        user_info = Map.take(Accounts.get_user(user_id), [:username, :id])
+        user_info = Map.take(Accounts.find(uuid), [:username, :id])
 
         assigns = [
           current_user: user_info,

@@ -10,8 +10,8 @@ defmodule Nyra.Repo.Migrations.CreateUsers do
       # Profile Information
       add :email, :string
       add :username, :string
-      add :age, :integer
-      add :gender, :string
+      add :age, :integer, default: 0, null: false
+      add :gender, :integer, default: 0, null: false
 
       # ban_level | after a certain amount of restrictions an account will be deleted.
       # premium_level | what the users perks are and how much they have paid basically.
@@ -24,9 +24,6 @@ defmodule Nyra.Repo.Migrations.CreateUsers do
       add :banned, :boolean, default: false, null: false
       add :activated, :boolean, default: false, null: false
       add :filter_access, :boolean, default: false, null: false
-
-      # Unsure if token is actually being used for anything right now.
-      add :token, :string, default: nil, null: true
 
       timestamps()
     end
