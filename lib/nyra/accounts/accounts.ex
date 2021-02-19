@@ -27,9 +27,9 @@ defmodule Nyra.Accounts do
 
   Current queryable fields == :username | :email
   """
-  def find(uuid \\ "") when is_binary(uuid), do: Repo.get(User, uuid)
+  def find(uuid) when is_binary(uuid), do: Repo.get(User, uuid)
 
-  def find([{field, value}] = query) do
+  def find(query) when is_list(query) do
     case Repo.get_by(User, query) do
       nil -> {:error, :not_found}
       user -> {:ok, user}
@@ -63,6 +63,7 @@ defmodule Nyra.Accounts do
     end
   end
 
+  @doc "Checks if a user is activated based on the UUID provided."
   @spec is_activated?(String.t()) :: :ok | {:error, :account_not_active}
   def is_activated?(user_id) when is_binary(user_id) do
     User
@@ -79,7 +80,12 @@ defmodule Nyra.Accounts do
   def is_activated?(1), do: :ok
   def is_activated?(_default), do: {:error, :account_not_active}
 
-  @doc "Inserts a new user into the database."
+  @doc """
+  Inserts a new user into the database.
+  Note:
+    Using the returning option since we're using UUID as a primary key.
+    It's necessary to get the ID in a return value I guess.
+  """
   def insert_user(changeset), do: Repo.insert(changeset, returning: [:id])
 
   @doc """
