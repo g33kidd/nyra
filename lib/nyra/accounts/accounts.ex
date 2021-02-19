@@ -3,10 +3,8 @@ defmodule Nyra.Accounts do
 
   use Nyra.Names
 
-  import Ecto.Query
-
-  alias Nyra.{Repo, Mailer}
-  alias Nyra.Accounts.{Token, User}
+  alias Nyra.Repo
+  alias Nyra.Accounts.User
 
   @doc "Gets all users from the database."
   def get_users, do: Repo.all(User)
