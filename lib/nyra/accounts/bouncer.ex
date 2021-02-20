@@ -87,20 +87,19 @@ defmodule Nyra.Bouncer do
     end
   end
 
-  # Removes codes from the state when the expired time is greater than the system time.
-  # @impl true
-  # def handle_call(:expire_codes, _from, state) do
-  # end
-
+  @spec expired?(Number.t()) :: Number.t()
   def expired?(time), do: time > :os.system_time(:seconds)
 
+  @doc "Generates a mostly random code based on a string given."
+  @spec generate_code(String.t()) :: {:ok, String.t()}
   def generate_code(data \\ "crypto") do
-    :crypto.hash(:sha256, data)
-    |> Base.encode64()
-    |> String.to_charlist()
-    |> Enum.shuffle()
-    |> Enum.take(6)
-    |> :binary.list_to_bin()
-    |> String.upcase()
+    {:ok,
+     :crypto.hash(:sha256, data)
+     |> Base.encode64()
+     |> String.to_charlist()
+     |> Enum.shuffle()
+     |> Enum.take(6)
+     |> :binary.list_to_bin()
+     |> String.upcase()}
   end
 end

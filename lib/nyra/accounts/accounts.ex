@@ -41,21 +41,18 @@ defmodule Nyra.Accounts do
   Returns a user if a user with the email given isn't found.
   Creates & Returns a new user with a randomly generated username if one isn't found.
   """
-  def find_or_create_user(%{"email" => email}, username \\ nil) do
+  def find_or_create_user(email) do
     case find(:email, email) do
       {:ok, user} ->
         {:ok, user}
 
       {:error, :not_found} ->
-        create_user(%{
-          username: if(username == nil, do: generate_username(), else: username),
-          email: email
-        })
+        create_user(%{username: generate_username(), email: email})
     end
   end
 
   @doc "Creates & Inserts a new user into the database."
-  @spec create_user(Map.t()) :: {:created, User.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_user(Map.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def create_user(%{"email" => _email, "username" => _username} = params) do
     %User{}
     |> User.changeset(params)

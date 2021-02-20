@@ -3,7 +3,6 @@ defmodule NyraWeb.AppLive do
 
   alias Nyra.Accounts
   alias NyraWeb.{Router, Presence, Endpoint}
-  alias Phoenix.Token
 
   import NyraWeb.LiveHelpers
 
@@ -42,10 +41,15 @@ defmodule NyraWeb.AppLive do
         # Subscribe to the lobby and track this session in Presence
         Endpoint.subscribe("lobby")
 
-        Presence.track(self(), "lobby", socket.id, %{
-          current_user: uuid,
-          online_at: :os.system_time(:seconds)
-        })
+        Presence.track(
+          self(),
+          "lobby",
+          socket.id,
+          %{
+            current_user: uuid,
+            online_at: :os.system_time(:seconds)
+          }
+        )
 
         presence_count =
           Presence.list_online()

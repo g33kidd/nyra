@@ -36,12 +36,35 @@ defmodule NyraWeb.PageLive do
     end
   end
 
+  @doc """
+  Handles the "authenticate" event from the LiveView form.
+  """
   @impl true
   def handle_event("authenticate", %{"email" => email}, socket) do
+    # user_type would be something like :created or :existing..
+
+    # ! THIS IS THE CODE to cleanup and whatever.
+    # ! THIS IS THE CODE to cleanup and whatever.
+    # ! THIS IS THE CODE to cleanup and whatever.
+    # ! THIS IS THE CODE to cleanup and whatever.
+    # ! THIS IS THE CODE to cleanup and whatever.
+
+    with {:ok, code} <- Bouncer.generate_code(socket.id),
+         {:ok, user, user_type} <- Accounts.find_or_create_user() do
+    else
+      {:error, changeset} -> assign(socket, error: changeset.errors)
+    end
+
+    # ! THIS IS THE CODE to cleanup and whatever.
+    # ! THIS IS THE CODE to cleanup and whatever.
+    # ! THIS IS THE CODE to cleanup and whatever.
+    # ! THIS IS THE CODE to cleanup and whatever.
+    # ! THIS IS THE CODE to cleanup and whatever.
+
     code = Bouncer.generate_code(socket.id)
 
     socket =
-      case Accounts.find_or_create_user(%{"email" => email}, socket.assigns.generated_username) do
+      case Accounts.find_or_create_user(email) do
         {:created, user} ->
           socket
           |> assign(current_state: :awaiting_code)
@@ -53,10 +76,6 @@ defmodule NyraWeb.PageLive do
           |> assign(current_state: :awaiting_code)
           |> assign(current_user: user)
           |> assign(user_type: :existing)
-
-        {:error, changeset} ->
-          socket
-          |> assign(error: changeset.errors)
       end
       |> assign(generated_code: code)
 
