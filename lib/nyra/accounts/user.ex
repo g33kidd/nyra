@@ -15,6 +15,8 @@ defmodule Nyra.Accounts.User do
   import Ecto.Changeset
   import Ecto.Query
 
+  alias Nyra.Repo
+
   # We automatically generate a UUID token for the user as their primary key.
   @primary_key {:id, Ecto.UUID, autogenerate: true}
 
@@ -77,5 +79,12 @@ defmodule Nyra.Accounts.User do
   @doc "Selects the count of the results within a query"
   def select_count(query) do
     from u in query, select: count(u.id)
+  end
+
+  def insert(changeset) do
+    case Repo.insert(changeset, returning: [:id]) do
+      {:ok, user} -> {:created, user}
+      {:error, err_changeset} -> {:error, err_changeset}
+    end
   end
 end

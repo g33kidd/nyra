@@ -38,8 +38,8 @@ defmodule Nyra.Accounts do
   def find(:email, email), do: Repo.get_by(User, email: email)
 
   @doc """
-  Finds or creates a user by their email address.
-
+  Returns a user if a user with the email given isn't found.
+  Creates & Returns a new user with a randomly generated username if one isn't found.
   """
   def find_or_create_user(%{"email" => email}, username \\ nil) do
     case find(:email, email) do
@@ -47,18 +47,19 @@ defmodule Nyra.Accounts do
         {:ok, user}
 
       {:error, :not_found} ->
-        changeset =
-          %User{}
-          |> User.changeset(%{
-            username: if(username == nil, do: generate_username(), else: username),
-            email: email
-          })
-
-        case Repo.insert(changeset, returning: [:id]) do
-          {:ok, new_user} -> {:created, new_user}
-          {:error, error_changeset} -> {:error, error_changeset}
-        end
+        create_user(%{
+          username: if(username == nil, do: generate_username(), else: username),
+          email: email
+        })
     end
+  end
+
+  @doc "Creates & Inserts a new user into the database."
+  @spec create_user(Map.t()) :: {:created, User.t()} | {:error, Ecto.Changeset.t()}
+  def create_user(%{"email" => _email, "username" => _username} = params) do
+    %User{}
+    |> User.changeset(params)
+    |> User.insert()
   end
 
   @doc "Checks if a user is activated based on the UUID provided."
