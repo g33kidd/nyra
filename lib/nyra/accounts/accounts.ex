@@ -44,18 +44,18 @@ defmodule Nyra.Accounts do
   def find_or_create_user(email) do
     case find(:email, email) do
       {:ok, user} ->
-        {:ok, user}
+        {:ok, user, :existing}
 
-      {:error, :not_found} ->
-        create_user(%{username: generate_username(), email: email})
+      _default ->
+        new_user = create_user(email, generate_username())
+        {:ok, new_user, :new}
     end
   end
 
   @doc "Creates & Inserts a new user into the database."
-  @spec create_user(Map.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  def create_user(%{"email" => _email, "username" => _username} = params) do
-    %User{}
-    |> User.changeset(params)
+  def create_user(email, username) do
+    %{"email" => email, "username" => username}
+    |> User.creation_changeset()
     |> User.insert()
   end
 
@@ -86,27 +86,26 @@ defmodule Nyra.Accounts do
 
   @doc """
   Generates a mostly random username with 64x64 possible combinations.
-  # TODO ensure name isn't already taken.
   """
   def generate_username do
     @names_matrix_1
     |> Enum.map(fn names -> Enum.random(Enum.map(names, fn n -> String.capitalize(n) end)) end)
     |> Enum.join("")
-    |> ensure_name_available()
+    |> ensure_username_available()
   end
 
   @doc "Ensures a name isn't taken by another user already."
-  def ensure_name_available(username \\ "") do
+  def ensure_username_available(username \\ "") do
     User
     |> User.with_username(username)
     |> User.select_count()
     |> Repo.all()
     |> Enum.at(0)
-    |> ensure_name_available?()
+    |> ensure_username_available?()
   end
 
   @doc "Pattern matching for the result above."
-  def ensure_name_available?(0), do: :ok
-  def ensure_name_available?(1), do: {:error, :name_taken}
-  def ensure_name_available?(_default), do: {:error, :name_taken}
+  def ensure_username_available?(0), do: :ok
+  def ensure_username_available?(1), do: {:error, :name_taken}
+  def ensure_username_available?(_default), do: {:error, :name_taken}
 end

@@ -22,9 +22,4 @@ defmodule NyraWeb.Presence do
       %{} -> true
     end
   end
-
-  def handle_info(c, d) do
-    IO.inspect(c)
-    d
-  end
 end

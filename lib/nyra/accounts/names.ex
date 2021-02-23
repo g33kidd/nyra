@@ -5,7 +5,37 @@ defmodule Nyra.Names do
   The only purpose of this file is to store pieces of usernames to be generated.
 
   Though I'm sure more logic will be implemented here at some point in the future.
+
+
+  # 2/22 NOTE
+
+  [descriptor] + [thing]
+
   """
+
+  @descriptors %{
+    :normal => [
+      "autumn", "hidden", "bitter", "misty", "silent", "empty", "dry", "dark", "summer",
+      "icy", "delicate", "quiet", "white", "cool", "spring", "winter", "patient", "twilight",
+      "dawn", "crimson"
+    ],
+    :music => [],
+    :code => [],
+    :cyber => [],
+    :colors => [
+      "blue"
+    ]
+  }
+
+  @things %{
+    :normal => [],
+    :music => [],
+    :cyber => [],
+    :colors => [],
+    :default => [
+      "wind",
+    ]
+  }
 
   defmacro __using__(_) do
     quote do

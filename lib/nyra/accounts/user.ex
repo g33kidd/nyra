@@ -16,6 +16,7 @@ defmodule Nyra.Accounts.User do
   import Ecto.Query
 
   alias Nyra.Repo
+  alias Nyra.Accounts.User
 
   # We automatically generate a UUID token for the user as their primary key.
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -23,39 +24,50 @@ defmodule Nyra.Accounts.User do
   # Permitted keys that can pass through the changeset.
   @permitted_keys [
     :email,
-    :username,
-    :activated,
     :banned,
     :premium,
+    :username,
+    :ban_level,
     :activated,
     :filter_access,
-    :ban_level,
     :premium_level
   ]
 
-  @required_keys [
-    :email,
-    :username
-  ]
+  @creation_keys [:email, :username]
+  @required_keys [:email, :username]
 
   schema "users" do
+    field :age, :integer
     field :email, :string
+    field :gender, :string
     field :username, :string
 
+    field :ban_level, :integer
+    field :premium_level, :integer
+
     # Profile & System Flags
-    field :activated, :boolean, default: false
     field :banned, :boolean, default: false
     field :premium, :boolean, default: false
+    field :activated, :boolean, default: false
     field :filter_access, :boolean, default: true
 
     timestamps()
   end
 
   # TODO create default and other changesets for updating and creating user accounts or profile information.
+  # TODO probably get rid of this code, but keep for now in-case we need a default changeset.
   @doc false
   def changeset(user, attrs \\ %{}) do
     user
     |> cast(attrs, @permitted_keys)
+    |> validate_required(@required_keys)
+    |> unique_constraint(:username)
+    |> unique_constraint(:email)
+  end
+
+  def creation_changeset(attrs \\ %{}) do
+    %User{}
+    |> cast(attrs, @creation_keys)
     |> validate_required(@required_keys)
     |> unique_constraint(:username)
     |> unique_constraint(:email)
