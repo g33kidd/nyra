@@ -8,7 +8,6 @@ defmodule NyraWeb.PageLive do
   def mount(_params, session, socket) do
     assigns = [
       # Private stuff
-      generated_username: nil,
       generated_code: nil,
 
       # Text Input Fields
@@ -41,9 +40,10 @@ defmodule NyraWeb.PageLive do
   """
   @impl true
   def handle_event("authenticate", %{"email" => email}, socket) do
+    code = Bouncer.generate_code(socket.id)
+
     socket =
-      with {:ok, code} <- Bouncer.generate_code(socket.id),
-           {:ok, user, user_type} <- Accounts.find_or_create_user(email) do
+      with {:ok, user, user_type} <- Accounts.find_or_create_user(email) do
         assign(socket,
           current_state: :awaiting_code,
           current_user: user,
@@ -51,7 +51,7 @@ defmodule NyraWeb.PageLive do
           generated_code: code
         )
 
-        Emails.login_link(code, user) |> Mailer.deliver_later()
+        Emails.login_link(email, code: code) |> Mailer.deliver_later()
       else
         {:error, changeset} -> assign(socket, error: changeset.errors)
       end
@@ -64,7 +64,7 @@ defmodule NyraWeb.PageLive do
   def handle_event("verify", %{"code" => code}, socket) do
     socket =
       with true <- String.match?(code, socket.assigns.generated_code),
-           token <- sign_token(socket, "user token") do
+           token <- sign_token(socket, "user token", socket.assigns.current_user.id) do
         redirect(socket, to: Routes.Helpers.session_path(socket, :create, token))
       else
         false -> assign(socket, error: "Invalid code.")

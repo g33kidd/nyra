@@ -9,7 +9,6 @@ defmodule NyraWeb.PageLiveTest do
 
   test "disconnected and connected render", %{conn: conn} do
     {:ok, page_live, disconnected_html} = live(conn, "/")
-    IO.inspect(conn)
 
     assert disconnected_html =~ "LOGIN"
     assert render(page_live) =~ "LOGIN"

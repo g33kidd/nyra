@@ -3,15 +3,21 @@ defmodule Nyra.Emails do
 
   import Bamboo.Email
 
-  def login_link(code, user) do
-    new_email()
-    |> to(user.email)
-    |> from("info@nyra.app")
-    |> subject("🚀 Nyra Magic Login Code")
-    |> html_body("""
+  @from "info@nyra.app"
+
+  def login_link(email, code: code) do
+    title = "🚀 Nyra Magic Login Code"
+
+    body = ~s"""
     <p>Here is your login code:</p>
     <h1><strong>#{code}</strong></h1>
     <p>It is valid for 30 minutes.</p>
-    """)
+    """
+
+    new_email()
+    |> to(email)
+    |> from(@from)
+    |> subject(title)
+    |> html_body(body)
   end
 end

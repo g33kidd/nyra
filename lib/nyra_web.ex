@@ -23,6 +23,8 @@ defmodule NyraWeb do
 
       import Plug.Conn
       import NyraWeb.Gettext
+      import NyraWeb.Helpers
+
       alias NyraWeb.Router.Helpers, as: Routes
     end
   end
@@ -47,7 +49,7 @@ defmodule NyraWeb do
       use Phoenix.LiveView,
         layout: {NyraWeb.LayoutView, "live.html"}
 
-      import NyraWeb.LiveHelpers
+      import NyraWeb.Helpers
 
       unquote(view_helpers())
     end

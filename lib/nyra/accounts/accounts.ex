@@ -47,7 +47,8 @@ defmodule Nyra.Accounts do
         {:ok, user, :existing}
 
       _default ->
-        new_user = create_user(email, generate_username())
+        username = generate_username()
+        new_user = create_user(email, username)
         {:ok, new_user, :new}
     end
   end

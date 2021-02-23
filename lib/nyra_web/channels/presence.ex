@@ -13,7 +13,8 @@ defmodule NyraWeb.Presence do
     track(pid, "lobby", socket.id, data)
   end
 
-  def list_online(), do: list("lobby")
+  @doc "List online users for a topic"
+  def list_online(topic \\ "lobby"), do: list(topic)
 
   # def exists?([], nil), do: {:}
   def exists?(devices, id) when is_binary(id) when is_map(devices) do
