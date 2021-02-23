@@ -47,4 +47,14 @@ defmodule NyraWeb.LiveHelpers do
   @doc "Grabs the user id from the Presence meta map"
   def fetch_id(nil), do: nil
   def fetch_id(%{metas: [first | _]}), do: first.current_user
+
+  @doc """
+  Signs a token for the current user in the socket.
+
+  ! TODO They should also be authorized..
+  """
+  def sign_token(socket, salt) do
+    %{id: user_id} = socket.assigns.current_user
+    Token.sign(Endpoint, salt, user_id)
+  end
 end

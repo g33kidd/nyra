@@ -2,7 +2,7 @@ defmodule NyraWeb.PageLive do
   use NyraWeb, :live_view
 
   alias NyraWeb.Router, as: Routes
-  alias Nyra.{Bouncer, Accounts}
+  alias Nyra.{Bouncer, Accounts, Mailer, Emails}
 
   @impl true
   def mount(_params, session, socket) do
@@ -50,31 +50,27 @@ defmodule NyraWeb.PageLive do
           user_type: user_type,
           generated_code: code
         )
+
+        Emails.login_link(code, user) |> Mailer.deliver_later()
       else
         {:error, changeset} -> assign(socket, error: changeset.errors)
       end
-
-    if socket.assigns.current_state == :awaiting_code and socket.assigns.current_user != nil do
-      Nyra.Emails.login_link(socket.assigns.generated_code, socket.assigns.current_user)
-      |> Nyra.Mailer.deliver_later()
-    end
 
     {:noreply, socket}
   end
 
   @impl true
+  @doc "Handles the verify form submission"
   def handle_event("verify", %{"code" => code}, socket) do
-    case if(code == socket.assigns.generated_code, do: :ok, else: :invalid) do
-      :ok ->
-        token = Phoenix.Token.sign(NyraWeb.Endpoint, "user token", socket.assigns.current_user.id)
+    socket =
+      with true <- String.match?(code, socket.assigns.generated_code),
+           token <- sign_token(socket, "user token") do
+        redirect(socket, to: Routes.Helpers.session_path(socket, :create, token))
+      else
+        false -> assign(socket, error: "Invalid code.")
+        _default -> assign(socket, error: "Invalid code.")
+      end
 
-        {:noreply, redirect(socket, to: Routes.Helpers.session_path(socket, :create, token))}
-
-      :invalid ->
-        {:noreply,
-         socket
-         |> assign(current_state: :awaiting_code)
-         |> assign(error: "Invalid code.")}
-    end
+    {:noreply, socket}
   end
 end

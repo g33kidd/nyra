@@ -54,9 +54,7 @@ defmodule Nyra.Accounts.User do
     timestamps()
   end
 
-  # TODO create default and other changesets for updating and creating user accounts or profile information.
-  # TODO probably get rid of this code, but keep for now in-case we need a default changeset.
-  @doc false
+  @doc "Default changeset."
   def changeset(user, attrs \\ %{}) do
     user
     |> cast(attrs, @permitted_keys)
@@ -65,6 +63,7 @@ defmodule Nyra.Accounts.User do
     |> unique_constraint(:email)
   end
 
+  @doc "Changeset used when creating a new user entirely."
   def creation_changeset(attrs \\ %{}) do
     %User{}
     |> cast(attrs, @creation_keys)
@@ -93,10 +92,22 @@ defmodule Nyra.Accounts.User do
     from u in query, select: count(u.id)
   end
 
+  @doc "Updates a users information."
+  def update(id, params \\ %{}) do
+  end
+
+  @doc """
+  Commits a new Changeset to the database.
+
+  TODO : Immediately send any new user a welcome email.
+  """
   def insert(changeset) do
     case Repo.insert(changeset, returning: [:id]) do
-      {:ok, user} -> {:created, user}
-      {:error, err_changeset} -> {:error, err_changeset}
+      {:ok, user} ->
+        {:created, user}
+
+      {:error, err_changeset} ->
+        {:error, err_changeset}
     end
   end
 end

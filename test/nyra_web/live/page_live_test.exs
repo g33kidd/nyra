@@ -3,9 +3,15 @@ defmodule NyraWeb.PageLiveTest do
 
   import Phoenix.LiveViewTest
 
+  test "Email form submit", %{conn: conn} do
+    {:ok, view, html} = live(conn, "/")
+  end
+
   test "disconnected and connected render", %{conn: conn} do
     {:ok, page_live, disconnected_html} = live(conn, "/")
-    assert disconnected_html =~ "Welcome to Phoenix!"
-    assert render(page_live) =~ "Welcome to Phoenix!"
+    IO.inspect(conn)
+
+    assert disconnected_html =~ "LOGIN"
+    assert render(page_live) =~ "LOGIN"
   end
 end
