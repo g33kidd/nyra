@@ -5,7 +5,9 @@ defmodule NyraWeb.PageLive do
   alias Nyra.{Bouncer, Accounts, Mailer, Emails}
 
   @impl true
-  def mount(_params, session, socket) do
+  def mount(params, session, socket) do
+    IO.inspect(session)
+
     assigns = [
       # Private stuff
       generated_code: nil,

@@ -4,7 +4,7 @@ defmodule NyraWeb.AppLive do
   alias Nyra.Accounts
   alias NyraWeb.{Router, Presence, Endpoint}
 
-  import NyraWeb.LiveHelpers
+  import NyraWeb.Helpers
 
   @doc """
 

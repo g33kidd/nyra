@@ -18,7 +18,7 @@ defmodule NyraWeb.Router do
     pipe_through :browser
 
     get "/session/:token", SessionController, :create, as: :session
-    post "/kill", SessionController, :destroy, as: :session
+    post "/session/destroy", SessionController, :destroy, as: :session
 
     live "/", PageLive, :index
     live "/about", PageLive, :about
