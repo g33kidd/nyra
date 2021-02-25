@@ -3,13 +3,18 @@ defmodule Nyra.UserPool do
 
   UserPool is a collection of user ids that are currently tracked in presence.
   There is some additional information that is stored in the state here
-    {waiting?, filters[], extra%{}}
 
+    {
+      waiting?
+      socket_id,
+      params
+    }
 
-  %{
-    "xxx-xxx-xxx" => {0,}
-  }
+    - socket_id holds the users socket id so we can disconnected them if needed.
+    - waiting tells whether or not this user is waiting to be connected with another.
+    - params holds some useful information when matching other users.
 
+    TODO make a note for storing filter information in the params.
 
 
   """
@@ -24,13 +29,19 @@ defmodule Nyra.UserPool do
   end
 
   @doc "Adds a user to the UserPool with default settings using the UUID."
-  def add_user(id, defaults \\ {0, [], 0}) do
-    GenServer.call(@name, {:add_user, id, defaults})
+  def add_user(socket, uuid) do
+    GenServer.call(
+      @name,
+      {:add_user, uuid, socket}
+    )
   end
 
   @doc "Removes a user from the UserPool using the UUID."
-  def remove_user(id) do
-    GenServer.cast(@name, {:remove_user, id})
+  def remove_user(uuid) do
+    GenServer.cast(
+      @name,
+      {:remove_user, uuid}
+    )
   end
 
   def read_state, do: GenServer.call(@name, :read_state)
@@ -44,8 +55,15 @@ defmodule Nyra.UserPool do
   # Callbacks
 
   @impl true
-  def handle_call({:add_user, id, defaults}, _from, state) do
-    state = Map.put(state, id, defaults)
+  def handle_call({:add_user, uuid, sid}, _from, state) do
+    default_params = [
+      filter: 0
+    ]
+
+    # NOTE: Refer to the @moduledoc for what params data carries
+    data = {0, sid, default_params}
+    state = Map.put(state, uuid, data)
+
     {:reply, :ok, state}
   end
 
@@ -53,18 +71,9 @@ defmodule Nyra.UserPool do
   def handle_call(:read_state, _from, state), do: {:reply, state, state}
 
   @impl true
-  def handle_cast({:remove_user, _id}, state) do
-    {:noreply, state}
-  end
-
-  @impl true
+  @doc "Pretty much handles cleaning up the UserPool when it gets busy."
   def handle_info(:cleanup, state) do
-    IO.puts("Cleaned below:")
-
-    state
-    |> cleanup()
-    |> IO.inspect()
-
+    state = cleanup(state)
     {:noreply, state}
   end
 

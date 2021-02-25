@@ -36,7 +36,7 @@ defmodule NyraWeb.AppLive do
 
   TODO instead of redirection to :index they should have their own pages.. too lazy rn.
   TODO figure out how to tell if a socket has been Disconnected!
-        need this in order to remove the user from the UserPool when they're not on the site anymore.
+    need this in order to remove the user from the UserPool when they're not on the site anymore.
   """
   @impl true
   def mount(_params, session, socket) do
@@ -61,7 +61,7 @@ defmodule NyraWeb.AppLive do
         )
 
         # Subscribe the user to the UserPool.
-        UserPool.add_user(uuid)
+        UserPool.add_user(uuid, socket.id)
 
         user_info = Accounts.take(uuid, [:id, :username])
 
@@ -114,6 +114,8 @@ defmodule NyraWeb.AppLive do
   """
   @impl true
   def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: _payload}, socket) do
+    IO.inspect("presence diff")
+
     socket =
       assign(socket,
         online_users_count: Presence.count_online()
