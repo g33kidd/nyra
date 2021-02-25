@@ -60,6 +60,7 @@ defmodule Nyra.Accounts do
     user
     |> User.changeset()
     |> User.update_flags(activated: true)
+    |> User.update()
   end
 
   @doc "Creates & Inserts a new user into the database."
@@ -79,20 +80,19 @@ defmodule Nyra.Accounts do
 
   @doc "Checks if a user is activated based on the UUID provided."
   @spec is_activated?(String.t()) :: :ok | {:error, :account_not_active}
-  def is_activated?(user_id) when is_binary(user_id) do
-    User
-    |> User.with_id(user_id)
-    |> User.where_active()
-    |> User.select_count()
-    |> Repo.all()
-    |> Enum.at(0)
-    |> is_activated?()
-  end
+  def is_activated?(user_id) do
+    count =
+      User
+      |> User.with_id(user_id)
+      |> User.where_active()
+      |> User.select_count()
+      |> Repo.all()
 
-  @doc "Pattern matching for the result above."
-  def is_activated?(0), do: {:error, :account_not_active}
-  def is_activated?(1), do: :ok
-  def is_activated?(_default), do: {:error, :account_not_active}
+    case Enum.at(count, 0) do
+      0 -> :ok
+      1 -> {:error, :account_not_found}
+    end
+  end
 
   @doc """
   Inserts a new user into the database.
