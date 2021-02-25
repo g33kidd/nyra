@@ -59,11 +59,11 @@ defmodule Nyra.UserPool do
 
   @impl true
   def handle_info(:cleanup, state) do
-    # IO.puts("Cleaned below:")
+    IO.puts("Cleaned below:")
 
-    # state
-    # |> cleanup()
-    # |> IO.inspect()
+    state
+    |> cleanup()
+    |> IO.inspect()
 
     {:noreply, state}
   end

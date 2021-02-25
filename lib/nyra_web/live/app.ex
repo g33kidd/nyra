@@ -1,4 +1,11 @@
 defmodule NyraWeb.AppLive do
+  @moduledoc """
+
+  TODO ! hey this is important
+  need to figure out a way to notify the UserPool w
+
+  """
+
   use NyraWeb, :live_view
 
   alias Nyra.{Accounts, UserPool}
@@ -28,7 +35,8 @@ defmodule NyraWeb.AppLive do
   unresolved. It returns a modified socket with assigns or redirects.
 
   TODO instead of redirection to :index they should have their own pages.. too lazy rn.
-
+  TODO figure out how to tell if a socket has been Disconnected!
+        need this in order to remove the user from the UserPool when they're not on the site anymore.
   """
   @impl true
   def mount(_params, session, socket) do
@@ -52,6 +60,7 @@ defmodule NyraWeb.AppLive do
           }
         )
 
+        # Subscribe the user to the UserPool.
         UserPool.add_user(uuid)
 
         user_info = Accounts.take(uuid, [:id, :username])
@@ -75,6 +84,7 @@ defmodule NyraWeb.AppLive do
         # Other cases will be state information stored as a Tuple.
         # also, this relates to [connected?/1]
         false ->
+          IO.inspect("Disconnected")
           socket
 
         {:error, :account_not_active} ->
