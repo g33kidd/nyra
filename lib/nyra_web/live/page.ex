@@ -44,6 +44,7 @@ defmodule NyraWeb.PageLive do
 
     socket =
       with {:ok, user, user_type} <- Accounts.find_or_create_user(email) do
+        # TODO move this somewhere else?
         Emails.login_link(email, code: code)
         |> Mailer.deliver_later()
 

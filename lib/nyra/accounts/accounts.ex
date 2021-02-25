@@ -40,6 +40,22 @@ defmodule Nyra.Accounts do
   def find(:email, email), do: Repo.get_by(User, email: email)
 
   @doc """
+  Helper method for taking only certain fields from a user.
+
+  Returns the data for the user in the form of a tuple `{:ok, fields}`.
+  Returns `nil` if a user couldn't be found.
+  """
+  def take(id, fields \\ []) do
+    case find(id) do
+      nil ->
+        nil
+
+      user ->
+        Map.take(user, fields)
+    end
+  end
+
+  @doc """
   Returns a user if a user with the email given isn't found.
   Creates & Returns a new user with a randomly generated username if one isn't found.
   """
@@ -60,6 +76,13 @@ defmodule Nyra.Accounts do
     user
     |> User.changeset()
     |> User.update_flags(activated: true)
+    |> User.update()
+  end
+
+  def update_token(%User{} = user, token) do
+    user
+    |> User.changeset()
+    |> put_change(:token, token)
     |> User.update()
   end
 

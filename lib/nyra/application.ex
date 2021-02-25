@@ -4,6 +4,7 @@ defmodule Nyra.Application do
 
   use Application
 
+  # Start a worker by calling: Nyra.Worker.start_link(arg)
   def start(_type, _args) do
     children = [
       # Start the Ecto repository
@@ -14,9 +15,11 @@ defmodule Nyra.Application do
       {Phoenix.PubSub, name: Nyra.PubSub},
       # Start the Endpoint (http/https)
       NyraWeb.Endpoint,
-      # Start a worker by calling: Nyra.Worker.start_link(arg)
+      # Start Phoenix Presence
       NyraWeb.Presence,
-      # Nyra.Bouncer
+      # Start the User Pool
+      Nyra.UserPool,
+      # Plug Attack storage
       {PlugAttack.Storage.Ets, name: Nyra.PlugAttack.Storage, clean_period: 60_000}
     ]
 

@@ -1,16 +1,28 @@
 defmodule NyraWeb.AppLive do
   use NyraWeb, :live_view
 
-  alias Nyra.Accounts
+  alias Nyra.{Accounts, UserPool}
   alias NyraWeb.{Router, Presence, Endpoint}
 
   import NyraWeb.Helpers
 
+  defp assign_defaults(socket) do
+    assign(socket,
+      current_user: %{
+        id: nil,
+        username: nil
+      },
+      online_users_count: nil,
+      loading: true,
+      error: nil
+    )
+  end
+
   @doc """
 
-    1. Check if this request is actually a connected user.
-    2. Ensure this user is using a single device using this email.
-    3. Track the user in presence for pooling and online state type stuff.
+  1. Check if this request is actually a connected user.
+  2. Ensure this user is using a single device using this email.
+  3. Track the user in presence for pooling and online state type stuff.
 
   handle_err tries to determine the determine the cause of the error. If not, it will run the default method
   unresolved. It returns a modified socket with assigns or redirects.
@@ -20,18 +32,7 @@ defmodule NyraWeb.AppLive do
   """
   @impl true
   def mount(_params, session, socket) do
-    # Default assigns
-    socket =
-      socket
-      |> assign(
-        current_user: %{
-          id: nil,
-          username: nil
-        },
-        online_users_count: nil,
-        loading: true,
-        error: nil
-      )
+    socket = assign_defaults(socket)
 
     socket =
       with true <- connected?(socket),
@@ -51,15 +52,13 @@ defmodule NyraWeb.AppLive do
           }
         )
 
-        presence_count =
-          Presence.list_online()
-          |> Enum.count()
+        UserPool.add_user(uuid)
 
-        user_info = Map.take(Accounts.find(uuid), [:username, :id])
+        user_info = Accounts.take(uuid, [:id, :username])
 
         assigns = [
           current_user: user_info,
-          online_users_count: presence_count,
+          online_users_count: Presence.count_online(),
           loading: false
         ]
 
@@ -69,7 +68,6 @@ defmodule NyraWeb.AppLive do
           redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
 
         {:error, :device_exists} ->
-          # TODO this should redirect to somewhere else.
           IO.inspect("device already connected")
           redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
 
@@ -101,16 +99,16 @@ defmodule NyraWeb.AppLive do
     2. Removes the user that just disconnected from the ENTIRE pool of users.
     3.
 
+    # TODO handles payload.leaves && payload.joins
+
   """
   @impl true
   def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: _payload}, socket) do
-    presence_count =
-      Presence.list_online()
-      |> Enum.count()
+    socket =
+      assign(socket,
+        online_users_count: Presence.count_online()
+      )
 
-    # TODO handles payload.leaves && payload.joins
-    # Just because we really need to remove the user that's leaving from everything.
-
-    {:noreply, assign(socket, online_users_count: presence_count)}
+    {:noreply, socket}
   end
 end

@@ -1,4 +1,8 @@
 defmodule Nyra.Accounts.Token do
+  @moduledoc """
+  TODO
+  I think this is dead
+  """
   use Ecto.Schema
 
   import Ecto.Changeset

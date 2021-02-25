@@ -13,6 +13,8 @@ defmodule Nyra.Bouncer do
   # Note
   This is some old dead code, but it might be used at some point in the future if decided to move away
   from Phoenix LiveView and into sockets or something??
+
+  TODO remove at some point
   """
 
   use GenServer
