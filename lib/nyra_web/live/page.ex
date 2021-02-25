@@ -5,9 +5,7 @@ defmodule NyraWeb.PageLive do
   alias Nyra.{Bouncer, Accounts, Mailer, Emails}
 
   @impl true
-  def mount(params, session, socket) do
-    IO.inspect(session)
-
+  def mount(_params, session, socket) do
     assigns = [
       # Private stuff
       generated_code: nil,
@@ -42,18 +40,19 @@ defmodule NyraWeb.PageLive do
   """
   @impl true
   def handle_event("authenticate", %{"email" => email}, socket) do
-    code = Bouncer.generate_code(socket.id)
+    {:ok, code} = Bouncer.generate_code(socket.id)
 
     socket =
       with {:ok, user, user_type} <- Accounts.find_or_create_user(email) do
+        Emails.login_link(email, code: code)
+        |> Mailer.deliver_later()
+
         assign(socket,
           current_state: :awaiting_code,
           current_user: user,
           user_type: user_type,
           generated_code: code
         )
-
-        Emails.login_link(email, code: code) |> Mailer.deliver_later()
       else
         {:error, changeset} -> assign(socket, error: changeset.errors)
       end
@@ -65,7 +64,7 @@ defmodule NyraWeb.PageLive do
   @doc "Handles the verify form submission"
   def handle_event("verify", %{"code" => code}, socket) do
     socket =
-      with true <- String.match?(code, socket.assigns.generated_code),
+      with true <- String.equivalent?(code, socket.assigns.generated_code),
            token <- sign_token(socket, "user token", socket.assigns.current_user.id) do
         redirect(socket, to: Routes.Helpers.session_path(socket, :create, token))
       else

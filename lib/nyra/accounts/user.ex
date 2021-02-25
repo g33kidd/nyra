@@ -98,8 +98,6 @@ defmodule Nyra.Accounts.User do
 
   @doc """
   Commits a new Changeset to the database.
-
-  TODO : Immediately send any new user a welcome email.
   """
   def insert(changeset) do
     case Repo.insert(changeset, returning: [:id]) do

@@ -47,7 +47,7 @@ defmodule Nyra.Accounts do
         {:ok, user, :existing}
 
       _default ->
-        username = generate_username()
+        {:ok, username} = generate_username()
         new_user = create_user(email, username)
         {:ok, new_user, :new}
     end
@@ -89,10 +89,15 @@ defmodule Nyra.Accounts do
   Generates a mostly random username with 64x64 possible combinations.
   """
   def generate_username do
-    @names_matrix_1
-    |> Enum.map(fn names -> Enum.random(Enum.map(names, fn n -> String.capitalize(n) end)) end)
-    |> Enum.join("")
-    |> ensure_username_available()
+    name =
+      @names_matrix_1
+      |> Enum.map(fn names -> Enum.random(Enum.map(names, fn n -> String.capitalize(n) end)) end)
+      |> Enum.join("")
+
+    case ensure_username_available(name) do
+      :ok -> {:ok, name}
+      _default -> generate_username()
+    end
   end
 
   @doc "Ensures a name isn't taken by another user already."
@@ -105,8 +110,8 @@ defmodule Nyra.Accounts do
     |> ensure_username_available?()
   end
 
-  @doc "Pattern matching for the result above."
+  @doc "Keeps trying if username is not available."
   def ensure_username_available?(0), do: :ok
-  def ensure_username_available?(1), do: {:error, :name_taken}
-  def ensure_username_available?(_default), do: {:error, :name_taken}
+  def ensure_username_available?(1), do: :taken
+  def ensure_username_available?(error), do: {:error, error}
 end

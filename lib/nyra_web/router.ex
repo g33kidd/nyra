@@ -24,6 +24,7 @@ defmodule NyraWeb.Router do
     live "/about", PageLive, :about
 
     live "/app", AppLive, :index
+    live "/settings", SettingsLive, :index
   end
 
   # Other scopes may use custom stacks.
