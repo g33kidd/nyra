@@ -66,10 +66,12 @@ defmodule NyraWeb.AppLive do
         assign(socket, assigns)
       else
         {:error, :no_token} ->
+          IO.inspect("device already connected")
           redirect(socket, to: Router.Helpers.page_path(socket, :index))
 
         {:error, :device_exists} ->
           # TODO this should redirect to somewhere else.
+          IO.inspect("device already connected")
           redirect(socket, to: Router.Helpers.page_path(socket, :index))
 
         # This should be the only case in which there is some boolean value.

@@ -6,6 +6,8 @@ defmodule Nyra.Accounts do
   alias Nyra.Repo
   alias Nyra.Accounts.User
 
+  import Ecto.Changeset
+
   @doc "Gets all users from the database."
   def get_users, do: Repo.all(User)
 
@@ -43,21 +45,36 @@ defmodule Nyra.Accounts do
   """
   def find_or_create_user(email) do
     case find(:email, email) do
-      {:ok, user} ->
-        {:ok, user, :existing}
-
-      _default ->
+      nil ->
         {:ok, username} = generate_username()
         new_user = create_user(email, username)
         {:ok, new_user, :new}
+
+      user ->
+        {:ok, user, :existing}
     end
+  end
+
+  @doc "Activates a user that isn't already active"
+  def activate(%User{} = user) do
+    user
+    |> User.changeset()
+    |> User.update_flags(activated: true)
   end
 
   @doc "Creates & Inserts a new user into the database."
   def create_user(email, username) do
-    %{"email" => email, "username" => username}
-    |> User.creation_changeset()
-    |> User.insert()
+    changeset =
+      %{"email" => email, "username" => username}
+      |> User.creation_changeset()
+
+    case User.insert(changeset) do
+      {:created, user} ->
+        user
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc "Checks if a user is activated based on the UUID provided."

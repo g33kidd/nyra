@@ -39,7 +39,7 @@ defmodule Nyra.Accounts.User do
   schema "users" do
     field :age, :integer
     field :email, :string
-    field :gender, :string
+    field :gender, :integer
     field :username, :string
 
     field :ban_level, :integer
@@ -79,7 +79,7 @@ defmodule Nyra.Accounts.User do
 
   @doc "Scoped query function for selecting active entries."
   def where_active(query) do
-    from u in query, where: u.active == true
+    from u in query, where: u.activated == true
   end
 
   @doc "Scoped query function for selecting with the username."
@@ -92,9 +92,22 @@ defmodule Nyra.Accounts.User do
     from u in query, select: count(u.id)
   end
 
-  @doc "Updates a users information."
-  def update(id, params \\ %{}) do
+  @doc "Commits changes for a changeset."
+  def update(changeset) do
+    case Repo.update(changeset) do
+      {:ok, _} -> :ok
+      {:error, changeset} -> {:error, changeset}
+    end
   end
+
+  @doc "Updates a users flags"
+
+  def update_flags(changeset, [{k, v} | t]) do
+    changeset = put_change(changeset, k, v)
+    update_flags(changeset, t)
+  end
+
+  def update_flags(changeset, []), do: changeset
 
   @doc """
   Commits a new Changeset to the database.
