@@ -119,16 +119,15 @@ defmodule Nyra.Accounts do
 
   @doc "Ensures a name isn't taken by another user already."
   def ensure_username_available(username \\ "") do
-    User
-    |> User.with_username(username)
-    |> User.select_count()
-    |> Repo.all()
-    |> Enum.at(0)
-    |> ensure_username_available?()
-  end
+    count =
+      User
+      |> User.with_username(username)
+      |> User.select_count()
+      |> Repo.all()
 
-  @doc "Keeps trying if username is not available."
-  def ensure_username_available?(0), do: :ok
-  def ensure_username_available?(1), do: :taken
-  def ensure_username_available?(error), do: {:error, error}
+    case Enum.at(count, 0) do
+      0 -> :ok
+      1 -> :taken
+    end
+  end
 end

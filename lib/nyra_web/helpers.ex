@@ -42,17 +42,39 @@ defmodule NyraWeb.Helpers do
 
   @doc """
   Makes sure someone isn't trying to use the same account multiple places for spamming or botting
+
+  TODO make a post about how the Dialyzer caught not having a local return value.
+  TODO it happened because our recursive function never matched for an empty List.
+
+  Yeah this is pretty cool. This snippet removed will cause it to pickup:
+
+      def ensure_single_device([], _id, acc), do: acc
+
   """
   @spec ensure_single_device(String.t()) :: :ok | {:error, :device_exists}
   def ensure_single_device(id) when is_binary(id) do
-    presences = NyraWeb.Presence.list_online()
+    count =
+      NyraWeb.Presence.list_online()
+      |> ensure_single_device(id)
 
-    existing_device_count =
-      Enum.map(presences, fn {_socket_id, presence} -> fetch_id(presence) end)
-      |> Enum.count(fn user_id -> user_id == id end)
-
-    if(existing_device_count > 0, do: {:error, :device_exists}, else: :ok)
+    if count > 0 do
+      {:error, :device_exists}
+    else
+      :ok
+    end
   end
+
+  def ensure_single_device(presences, id) do
+    ensure_single_device(presences, id, 0)
+  end
+
+  def ensure_single_device([{_socket_id, presence} | t] = _presences, id, acc) do
+    user_id = fetch_id(presence)
+    acc = if user_id == id, do: acc + 1, else: acc
+    ensure_single_device(t, id, acc)
+  end
+
+  def ensure_single_device(%{}, _id, acc), do: acc
 
   @doc "Grabs the user id from the Presence meta map"
   def fetch_id(nil), do: nil
@@ -60,8 +82,6 @@ defmodule NyraWeb.Helpers do
 
   @doc """
   Signs a token for the current user in the socket.
-
-  ! TODO They should also be authorized..
   """
   def sign_token(socket, salt) do
     %{id: user_id} = socket.assigns.current_user

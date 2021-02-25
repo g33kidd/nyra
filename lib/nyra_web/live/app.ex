@@ -66,13 +66,12 @@ defmodule NyraWeb.AppLive do
         assign(socket, assigns)
       else
         {:error, :no_token} ->
-          IO.inspect("device already connected")
-          redirect(socket, to: Router.Helpers.page_path(socket, :index))
+          redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
 
         {:error, :device_exists} ->
           # TODO this should redirect to somewhere else.
           IO.inspect("device already connected")
-          redirect(socket, to: Router.Helpers.page_path(socket, :index))
+          redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
 
         # This should be the only case in which there is some boolean value.
         # Other cases will be state information stored as a Tuple.
@@ -81,10 +80,11 @@ defmodule NyraWeb.AppLive do
           socket
 
         {:error, :account_not_active} ->
-          redirect(socket, to: Router.Helpers.page_path(socket, :index))
+          redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
 
         {:error, default_error} ->
           assign(socket, error: default_error)
+          redirect(socket, to: Router.Helpers.page_path(socket, :index))
       end
 
     {:ok, socket}
