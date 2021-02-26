@@ -12,6 +12,7 @@ defmodule NyraWeb.AppLive do
   alias NyraWeb.{Presence, Router}
 
   import NyraWeb.Helpers
+  import NyraWeb.Router.Helpers, only: [session_path: 2, page_path: 2]
 
   defp assign_defaults(socket) do
     assign(socket,
@@ -58,27 +59,51 @@ defmodule NyraWeb.AppLive do
           loading: false
         )
       else
-        {:error, :no_token} ->
-          redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
-
-        {:error, :device_exists} ->
-          redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
-
-        # This should be the only case in which there is some boolean value.
-        # Other cases will be state information stored as a Tuple.
-        # also, this relates to [connected?/1]
         false ->
           socket
 
-        {:error, :account_not_active} ->
-          redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
+        {:error, error} ->
+          handle_error(socket, error)
+          # {:error, :no_token} ->
+          #   redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
 
-        {:error, default_error} ->
-          assign(socket, error: default_error)
-          redirect(socket, to: Router.Helpers.page_path(socket, :index))
+          # {:error, :device_exists} ->
+          #   redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
+
+          # # This should be the only case in which there is some boolean value.
+          # # Other cases will be state information stored as a Tuple.
+          # # also, this relates to [connected?/1]
+          # false ->
+          #   socket
+
+          # {:error, :account_not_active} ->
+          #   redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
+
+          # {:error, default_error} ->
+          #   assign(socket, error: default_error)
+          #   redirect(socket, to: Router.Helpers.page_path(socket, :index))
       end
 
     {:ok, socket}
+  end
+
+  @doc "Handles error states by modifying the socket"
+  def handle_error(socket, :no_token) do
+    redirect(socket, to: session_path(socket, :destroy))
+  end
+
+  def handle_error(socket, :device_exists) do
+    redirect(socket, to: session_path(socket, :destroy))
+  end
+
+  def handle_error(socket, :account_not_active) do
+    redirect(socket, to: session_path(socket, :destroy))
+  end
+
+  def handle_error(socket, error) do
+    socket
+    |> assign(error: error)
+    |> redirect(to: page_path(socket, :index))
   end
 
   @impl true

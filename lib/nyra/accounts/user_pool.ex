@@ -79,8 +79,9 @@ defmodule Nyra.UserPool do
 
   @impl true
   @doc "Pretty much handles cleaning up the UserPool when it gets busy."
+  # TODO fix the cleanup method because it just removes everything at this point, it's useless.
   def handle_info(:cleanup, state) do
-    state = cleanup(state)
+    # state = cleanup(state)
     {:noreply, state}
   end
 
