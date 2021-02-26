@@ -4,7 +4,7 @@ defmodule NyraWeb.Helpers do
   """
 
   alias Phoenix.{LiveView, Token}
-  alias NyraWeb.Endpoint
+  alias NyraWeb.{Presence, Endpoint}
 
   @doc "Signs a token that can be a sent to a client for Plug.Conn"
   def sign_token(%Plug.Conn{} = _conn, salt, data) do
@@ -86,5 +86,22 @@ defmodule NyraWeb.Helpers do
   def sign_token(socket, salt) do
     %{id: user_id} = socket.assigns.current_user
     Token.sign(Endpoint, salt, user_id)
+  end
+
+  @doc "Sets up tracking for the user Socket"
+  def track(socket, uuid) do
+    Endpoint.subscribe("lobby")
+
+    Presence.track(
+      self(),
+      "lobby",
+      socket.id,
+      %{
+        current_user: uuid,
+        online_at: :os.system_time(:seconds)
+      }
+    )
+
+    socket
   end
 end

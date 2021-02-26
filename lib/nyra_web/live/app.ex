@@ -9,7 +9,7 @@ defmodule NyraWeb.AppLive do
   use NyraWeb, :live_view
 
   alias Nyra.{Accounts, UserPool}
-  alias NyraWeb.{Router, Presence, Endpoint}
+  alias NyraWeb.{Presence, Router}
 
   import NyraWeb.Helpers
 
@@ -25,6 +25,7 @@ defmodule NyraWeb.AppLive do
     )
   end
 
+  @impl true
   @doc """
 
   1. Check if this request is actually a connected user.
@@ -38,7 +39,6 @@ defmodule NyraWeb.AppLive do
   TODO figure out how to tell if a socket has been Disconnected!
     need this in order to remove the user from the UserPool when they're not on the site anymore.
   """
-  @impl true
   def mount(_params, session, socket) do
     socket = assign_defaults(socket)
 
@@ -46,45 +46,28 @@ defmodule NyraWeb.AppLive do
       with true <- connected?(socket),
            {:ok, uuid} <- is_user_session?(session),
            :ok <- ensure_single_device(uuid),
-           :ok <- Accounts.is_activated?(uuid) do
-        # Subscribe to the lobby and track this session in Presence
-        Endpoint.subscribe("lobby")
+           :ok <- Accounts.is_activated?(uuid),
+           user_info <- Accounts.take(uuid, [:id, :username]) do
+        UserPool.add(socket, uuid, [])
 
-        Presence.track(
-          self(),
-          "lobby",
-          socket.id,
-          %{
-            current_user: uuid,
-            online_at: :os.system_time(:seconds)
-          }
-        )
-
-        # Subscribe the user to the UserPool.
-        UserPool.add_user(uuid, socket.id)
-
-        user_info = Accounts.take(uuid, [:id, :username])
-
-        assigns = [
+        socket
+        |> track(uuid)
+        |> assign(
           current_user: user_info,
           online_users_count: Presence.count_online(),
           loading: false
-        ]
-
-        assign(socket, assigns)
+        )
       else
         {:error, :no_token} ->
           redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
 
         {:error, :device_exists} ->
-          IO.inspect("device already connected")
           redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
 
         # This should be the only case in which there is some boolean value.
         # Other cases will be state information stored as a Tuple.
         # also, this relates to [connected?/1]
         false ->
-          IO.inspect("Disconnected")
           socket
 
         {:error, :account_not_active} ->
@@ -98,24 +81,18 @@ defmodule NyraWeb.AppLive do
     {:ok, socket}
   end
 
-  # Channel Messages
-
-  # Phoenix Presence Stuff
-
+  @impl true
   @doc """
   Handles Phoenix socket broadcasts from the presence channel.
 
     1. Updates the current online users count.
     2. Removes the user that just disconnected from the ENTIRE pool of users.
-    3.
 
     # TODO handles payload.leaves && payload.joins
+    # !NOTE this is only called when the user joins.
 
   """
-  @impl true
   def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: _payload}, socket) do
-    IO.inspect("presence diff")
-
     socket =
       assign(socket,
         online_users_count: Presence.count_online()

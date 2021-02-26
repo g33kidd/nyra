@@ -29,21 +29,30 @@ defmodule Nyra.UserPool do
   end
 
   @doc "Adds a user to the UserPool with default settings using the UUID."
-  def add_user(socket, uuid) do
+  def add(socket, uuid, params) do
     GenServer.call(
       @name,
-      {:add_user, uuid, socket}
+      {:add_user, uuid, socket, params}
     )
   end
 
   @doc "Removes a user from the UserPool using the UUID."
-  def remove_user(uuid) do
+  def remove(uuid) do
     GenServer.cast(
       @name,
       {:remove_user, uuid}
     )
   end
 
+  @doc "Update param information for a certain UUID"
+  def update(uuid, params) do
+    GenServer.call(
+      @name,
+      {:update, uuid, params}
+    )
+  end
+
+  @doc "Reads the state, for development only really"
   def read_state, do: GenServer.call(@name, :read_state)
 
   @impl true
@@ -55,13 +64,11 @@ defmodule Nyra.UserPool do
   # Callbacks
 
   @impl true
-  def handle_call({:add_user, uuid, sid}, _from, state) do
-    default_params = [
-      filter: 0
-    ]
-
+  def handle_call({:add_user, uuid, socket, params}, _from, state) do
+    # Params is basically settings that other users trying to matchup with should know about.
+    # Such as age range, gender, etc..
     # NOTE: Refer to the @moduledoc for what params data carries
-    data = {0, sid, default_params}
+    data = {0, socket.id, params}
     state = Map.put(state, uuid, data)
 
     {:reply, :ok, state}
