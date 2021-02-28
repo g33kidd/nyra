@@ -4,8 +4,13 @@ defmodule NyraWeb.Components.StatusBar do
   def render(assigns) do
     ~L"""
     <div class="statusbar">
-      <div class="welcome">Hello, <%= @current_user.username %>!</div>
-      <div class="online-count">Online Now <span><%= @online %></span></div>
+      <div class="welcome">Hello <strong><%= @current_user.username %></strong></div>
+      <div class="user-count">
+        <div class="header">Online Now</div>
+        <div class="count">
+          <span class="online"><%= @online %></span> / <span class="total">350</span>
+        </div>
+      </div>
     </div>
     """
   end

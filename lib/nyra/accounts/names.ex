@@ -1,23 +1,37 @@
 defmodule Nyra.Names do
   @moduledoc """
   Honestly I just did this to clean up the code of accounts.ex
-
   The only purpose of this file is to store pieces of usernames to be generated.
-
   Though I'm sure more logic will be implemented here at some point in the future.
 
-
-  # 2/22 NOTE
-
-  [descriptor] + [thing]
-
+  TODO marking this for up next
+  TODO marking this for up next
+  TODO marking this for up next
+  TODO marking this for up next
   """
 
   @descriptors %{
     :normal => [
-      "autumn", "hidden", "bitter", "misty", "silent", "empty", "dry", "dark", "summer",
-      "icy", "delicate", "quiet", "white", "cool", "spring", "winter", "patient", "twilight",
-      "dawn", "crimson"
+      "autumn",
+      "hidden",
+      "bitter",
+      "misty",
+      "silent",
+      "empty",
+      "dry",
+      "dark",
+      "summer",
+      "icy",
+      "delicate",
+      "quiet",
+      "white",
+      "cool",
+      "spring",
+      "winter",
+      "patient",
+      "twilight",
+      "dawn",
+      "crimson"
     ],
     :music => [],
     :code => [],
@@ -33,7 +47,7 @@ defmodule Nyra.Names do
     :cyber => [],
     :colors => [],
     :default => [
-      "wind",
+      "wind"
     ]
   }
 

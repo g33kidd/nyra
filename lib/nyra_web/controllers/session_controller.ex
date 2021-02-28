@@ -1,4 +1,10 @@
 defmodule NyraWeb.SessionController do
+  # ! Marking for removal
+  # ! Marking for removal
+  # ! Marking for removal
+  # ! Marking for removal
+  # ! Marking for removal
+
   use NyraWeb, :controller
 
   alias NyraWeb.Endpoint

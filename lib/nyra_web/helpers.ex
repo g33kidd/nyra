@@ -46,10 +46,6 @@ defmodule NyraWeb.Helpers do
 
   def is_user_session?(%{"_csrf_token" => _csrf}), do: {:error, :no_token}
 
-  @doc "Loads a user and assigns it to the socket"
-  def load_user(socket, token) do
-  end
-
   @doc """
   Makes sure someone isn't trying to use the same account multiple places for spamming or botting
 

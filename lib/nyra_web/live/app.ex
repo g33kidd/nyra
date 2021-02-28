@@ -8,10 +8,8 @@ defmodule NyraWeb.AppLive do
   import NyraWeb.Router.Helpers
 
   @assign_defaults [
-    username: "",
-    user_id: "",
     current_user: nil,
-    online_users_count: nil,
+    online_users_count: "???",
     loading: true,
     error: ""
   ]
@@ -25,8 +23,6 @@ defmodule NyraWeb.AppLive do
       <%= live_component(@socket, Components.StatusBar, [
         id: "status_bar",
         current_user: @current_user,
-        username: @username,
-        user_id: @user_id,
         loading: @loading,
         online: @online_users_count
       ]) %>
@@ -81,13 +77,46 @@ defmodule NyraWeb.AppLive do
   TODO figure out how to tell if a socket has been Disconnected!
     need this in order to remove the user from the UserPool when they're not on the site anymore.
   """
+  # def mount(%{}, _session, socket) do
+  #   {:ok, assign(socket, @assign_defaults)}
+  # end
+
+  # This should be the first step in the "redirection".
+  def mount(%{"token" => token}, _session, socket) do
+    socket = assign(socket, @assign_defaults)
+
+    socket =
+      with {:ok, uuid} <- verify_token(socket, "user token", token),
+           user <- Accounts.find(uuid) do
+        IO.puts("here")
+        assign(socket, current_user: user, loading: false)
+      else
+        {:error, :invalid} ->
+          socket
+
+        {:error, :expired} ->
+          socket
+
+        {:error, :missing} ->
+          socket
+
+        nil ->
+          socket
+      end
+      |> IO.inspect()
+
+    {:ok, socket}
+  end
+
   def mount(_params, _session, socket) do
     socket = assign(socket, @assign_defaults)
 
     socket =
       with true <- connected?(socket) do
+        Process.send_after(self(), :presence_info, 500)
+
+        # OK WE CANT TRACK UNTIL WE GET THE UUID SO STOP TRYING
         socket
-        |> IO.inspect()
       else
         false -> socket
       end

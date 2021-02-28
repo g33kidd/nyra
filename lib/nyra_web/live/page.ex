@@ -83,8 +83,12 @@ defmodule NyraWeb.PageLive do
         # Okay so currently just making a note here of some ideas on how to solve this fucking token problem.
         # I'm thinking we need to redirect to /app?token=XXXXXX then redirect back to /app without the token param.
         # The token isn't super important right away, but we need to get the user id from that token since it's been signed.
-        Process.send_after(self(), :redirect, 100)
-        push_event(socket, "token", %{token: token, id: id})
+        #
+        # This is the old method in-case needed again..
+        # Process.send_after(self(), :redirect, 100)
+        # push_event(socket, "token", %{token: token, id: id})
+
+        redirect(socket, to: app_path(socket, :index, token: token))
       else
         false -> assign(socket, error: "Invalid code.")
         _default -> assign(socket, error: "Invalid code.")
@@ -100,11 +104,11 @@ defmodule NyraWeb.PageLive do
 
   @impl true
   def handle_event("token_restore", %{"token" => _token}, socket) do
-    {:noreply, redirect(socket, to: app_path(socket, :index))}
+    {:noreply, socket}
   end
 
-  @impl true
-  def handle_info(:redirect, socket) do
-    {:noreply, push_redirect(socket, to: app_path(socket, :index))}
-  end
+  # @impl true
+  # def handle_info(:redirect, socket) do
+  #   {:noreply, push_redirect(socket, to: app_path(socket, :index))}
+  # end
 end

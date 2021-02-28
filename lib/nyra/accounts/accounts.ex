@@ -6,8 +6,6 @@ defmodule Nyra.Accounts do
   alias Nyra.{Mailer, Emails, Repo}
   alias Nyra.Accounts.User
 
-  import Ecto.Changeset
-
   @doc "Gets all users from the database."
   def get_users, do: Repo.all(User)
 

@@ -1,5 +1,3 @@
-// ʕ•́ᴥ•̀ʔっ
-
 /* This file is for your main application css. */
 @import "../node_modules/nprogress/nprogress.css";
 
@@ -16,8 +14,32 @@
 
 // !NOTE
 // Normal padding size is 1rem. Also could be 1.2rem for vertical padding.
-
 // Ano[ny]mous [Ra]ndom Chat.
+
+.statusbar {
+  box-sizing: border-box;
+  margin-top: 12px;
+  width: 960px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  // .welcome {
+  // }
+
+  .user-count {
+    text-align: right;
+    font-size: 12px;
+
+    .header {
+      text-transform: uppercase;
+      font-weight: bolder;
+    }
+  }
+}
 
 .hero {
   font-family: "Rubik", sans-serif;
@@ -73,8 +95,9 @@
 }
 
 .app {
-  background: #111;
-  color: #fff;
+  // ! NOTE honestly just for development, can be moved somewhere else to save some time switching off/on.
+  // background: #111;
+  // color: #fff;
   font-family: "Roboto", sans-serif;
   height: 100vh;
   margin: 0 auto;
