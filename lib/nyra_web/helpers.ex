@@ -1,11 +1,14 @@
 defmodule NyraWeb.Helpers do
   @moduledoc """
   Helpers that modify sessions and what not useful for controllers.
+
+  # TODO do I need this?
   """
 
   alias Phoenix.{LiveView, Token}
   alias NyraWeb.{Presence, Endpoint}
 
+  # TODO do I need this?
   @doc "Signs a token that can be a sent to a client for Plug.Conn"
   def sign_token(%Plug.Conn{} = _conn, salt, data) do
     Token.sign(Endpoint, salt, data)
@@ -15,11 +18,14 @@ defmodule NyraWeb.Helpers do
     Token.sign(Endpoint, salt, data)
   end
 
+  # TODO do I need this?
   @doc "Verifies a token for a Plug connection"
-  def verify_token(%Plug.Conn{} = conn, salt, token) do
+  def verify_token(%Plug.Conn{} = _conn, salt, token) do
+    Token.verify(Endpoint, salt, token)
   end
 
-  def verify_token(%LiveView.Socket{} = socket, salt, token) do
+  def verify_token(%LiveView.Socket{} = _socket, salt, token) do
+    Token.verify(Endpoint, salt, token)
   end
 
   @doc """
@@ -39,6 +45,10 @@ defmodule NyraWeb.Helpers do
   end
 
   def is_user_session?(%{"_csrf_token" => _csrf}), do: {:error, :no_token}
+
+  @doc "Loads a user and assigns it to the socket"
+  def load_user(socket, token) do
+  end
 
   @doc """
   Makes sure someone isn't trying to use the same account multiple places for spamming or botting

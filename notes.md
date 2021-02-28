@@ -16,3 +16,9 @@ Messages would persist for how long?
 # Moderation Stuff
 
 ban_level, premium, banned, filter_access flags will help.
+
+
+# Doot doot
+
+- There should be a component to notify the user their session expired.
+- Also need a way to expire sessions :)

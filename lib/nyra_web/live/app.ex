@@ -1,22 +1,16 @@
 defmodule NyraWeb.AppLive do
-  @moduledoc """
-
-  TODO ! hey this is important
-  need to figure out a way to notify the UserPool w
-
-  """
-
   use NyraWeb, :live_view
 
   alias Nyra.Accounts
   alias NyraWeb.{Components, Presence}
 
   import NyraWeb.Helpers
-  import NyraWeb.Router.Helpers, only: [session_path: 2, page_path: 2]
+  import NyraWeb.Router.Helpers
 
   @assign_defaults [
     username: "",
     user_id: "",
+    current_user: nil,
     online_users_count: nil,
     loading: true,
     error: ""
@@ -24,19 +18,57 @@ defmodule NyraWeb.AppLive do
 
   @impl true
   def render(assigns) do
-    IO.inspect(assigns)
-
     ~L"""
-
-    <%= live_component(@socket, Components.StatusBar, [
-          id: "status_bar",
-          username: @username,
-          user_id: @user_id,
-          loading: @loading,
-          online: @online_users_count
-        ]) %>
-
+    <%= if @loading do %>
+      <%= live_component(@socket, Components.Loading, id: "loading") %>
+    <% else %>
+      <%= live_component(@socket, Components.StatusBar, [
+        id: "status_bar",
+        current_user: @current_user,
+        username: @username,
+        user_id: @user_id,
+        loading: @loading,
+        online: @online_users_count
+      ]) %>
+    <% end %>
     """
+  end
+
+  @impl true
+  def handle_event("token_restore", %{"token" => nil}, socket) do
+    if connected?(socket) do
+      {:noreply, redirect(socket, to: page_path(socket, :index))}
+    end
+  end
+
+  @impl true
+  def handle_event("token_restore", %{"token" => token}, socket) do
+    socket =
+      with {:ok, user_id} <- verify_token(socket, "user token", token),
+           user <- Accounts.find(user_id) do
+        assign(socket,
+          current_user: Map.from_struct(user),
+          loading: false
+        )
+      else
+        # TODO redirections.
+        {:error, :invalid} ->
+          socket
+
+        # redirect(socket, to: page_path())
+
+        {:error, :expired} ->
+          socket
+
+        {:error, :missing} ->
+          socket
+
+        # When user is not found.. oops
+        nil ->
+          nil
+      end
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -56,28 +88,21 @@ defmodule NyraWeb.AppLive do
   def mount(_params, session, socket) do
     socket = assign(socket, @assign_defaults)
 
-    connected?(socket)
-    |> IO.inspect()
-
     with true <- connected?(socket),
          {:ok, uuid} <- is_user_session?(session),
          :ok <- ensure_single_device(uuid),
          :ok <- Accounts.is_activated?(uuid),
-         user_info = Accounts.take(uuid, [:id, :username]) do
-      IO.inspect(user_info.username)
-      IO.inspect(user_info.id)
-
+         user_info <- Accounts.take(uuid, [:id, :username]) do
       socket =
         socket
-        # |> pool(uuid, [])
-        # |> track(uuid)
+        |> pool(uuid, [])
+        |> track(uuid)
         |> assign(socket,
           username: user_info.username,
           user_id: user_info.id,
           online_users_count: Presence.count_online(),
           loading: false
         )
-        |> IO.inspect()
 
       send_update(Components.StatusBar,
         id: "status_bar",
@@ -96,15 +121,15 @@ defmodule NyraWeb.AppLive do
 
   @doc "Handles error states by modifying the socket"
   def handle_error(socket, :no_token) do
-    redirect(socket, to: session_path(socket, :destroy))
+    redirect(socket, to: app_path(socket, :index))
   end
 
   def handle_error(socket, :device_exists) do
-    redirect(socket, to: session_path(socket, :destroy))
+    redirect(socket, to: app_path(socket, :index))
   end
 
   def handle_error(socket, :account_not_active) do
-    redirect(socket, to: session_path(socket, :destroy))
+    redirect(socket, to: app_path(socket, :index))
   end
 
   def handle_error(socket, error) do

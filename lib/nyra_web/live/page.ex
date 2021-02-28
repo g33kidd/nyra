@@ -2,9 +2,9 @@ defmodule NyraWeb.PageLive do
   use NyraWeb, :live_view
 
   alias NyraWeb.Components
-  alias Nyra.{Emails, Mailer, Accounts, Bouncer}
+  alias Nyra.{Accounts, Bouncer}
 
-  import NyraWeb.Router.Helpers, only: [session_path: 3, app_path: 2]
+  import NyraWeb.Router.Helpers
 
   @default_assigns [
     current_state: "init",
@@ -14,9 +14,20 @@ defmodule NyraWeb.PageLive do
   ]
 
   @impl true
+  def mount(_params, _session, socket) do
+    {:ok,
+     assign(socket,
+       current_state: "init",
+       email_input: "yo@gmail.com",
+       code_input: nil,
+       error: nil
+     )}
+  end
+
+  @impl true
   def render(assigns) do
     ~L"""
-    <div class="hero">
+    <div class="hero" id="hero">
 
       <div class="title logo">Nyra</div>
       <div class="subtitle">Blah blah blah blah.</div>
@@ -26,7 +37,7 @@ defmodule NyraWeb.PageLive do
 
       <%= case @current_state do %>
         <%= "init" -> %>
-        <%= live_component(@socket, Components.Auth, id: "authentication", email_input: @email_input) %>
+        <%= live_component(@socket, Components.Auth, id: "auth_init", email_input: @email_input) %>
 
         <% "code" -> %>
         <%= live_component(@socket, Components.AuthVerify, id: "auth_verify", code_input: @code_input) %>
@@ -51,23 +62,17 @@ defmodule NyraWeb.PageLive do
     socket =
       with {:ok, code} <- Bouncer.generate_code(socket.id),
            {:ok, user, user_type} <- Accounts.find_or_create_user(email) do
-        # TODO move this somewhere else?
-        Emails.login_link(email, code: code)
-        |> Mailer.deliver_later()
+        Accounts.deliver_code(email, code)
 
-        socket
-        |> assign(
+        assign(socket,
           current_state: "code",
           current_user: user,
           user_type: user_type,
           generated_code: code
         )
-        |> IO.inspect()
       else
         {:error, changeset} -> assign(socket, error: changeset.errors)
       end
-
-    IO.inspect(socket.assigns.current_user)
 
     {:noreply, socket}
   end
@@ -75,17 +80,14 @@ defmodule NyraWeb.PageLive do
   @impl true
   @doc "Handles the verify form submission"
   def handle_event("verify", %{"code" => code}, socket) do
-    socket =
-      with true <-
-             String.equivalent?(code, socket.assigns.generated_code) do
-        token =
-          sign_token(
-            socket,
-            "user token",
-            socket.assigns.current_user.id
-          )
+    id = socket.assigns.current_user.id
 
-        push_redirect(socket, to: session_path(socket, :create, token))
+    socket =
+      with true <- String.equivalent?(code, socket.assigns.generated_code),
+           token <- sign_token(socket, "user token", id) do
+        # wait just to make sure token is set before redirecting.
+        Process.send_after(self(), :redirect, 100)
+        push_event(socket, "token", %{token: token, id: id})
       else
         false -> assign(socket, error: "Invalid code.")
         _default -> assign(socket, error: "Invalid code.")
@@ -95,7 +97,17 @@ defmodule NyraWeb.PageLive do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, @default_assigns)}
+  def handle_event("token_restore", %{"token" => nil}, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("token_restore", %{"token" => _token}, socket) do
+    {:noreply, redirect(socket, to: app_path(socket, :index))}
+  end
+
+  @impl true
+  def handle_info(:redirect, socket) do
+    {:noreply, push_redirect(socket, to: app_path(socket, :index))}
   end
 end

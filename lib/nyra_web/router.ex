@@ -17,15 +17,20 @@ defmodule NyraWeb.Router do
   scope "/", NyraWeb do
     pipe_through :browser
 
-    get "/session/:token", SessionController, :create, as: :session
-    post "/session/destroy", SessionController, :destroy, as: :session
+    # TODO get rid of this stuff as it won't be needed anymore.
+    # get "/session/:token", SessionController, :create, as: :session
+    # post "/session/destroy", SessionController, :destroy, as: :session
 
-    if Mix.env() == :dev do
-      get "/s/d", SessionController, :destroy, as: :session
-    end
+    # # Development stuff.
+    # if Mix.env() == :dev do
+    #   get "/s/d", SessionController, :destroy, as: :session
+    # end
 
+    # Actual content pages.
     live "/", PageLive, :index
     live "/about", PageLive, :about
+
+    # Application pages.
     live "/app", AppLive, :index
   end
 

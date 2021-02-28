@@ -3,7 +3,7 @@ defmodule Nyra.Accounts do
 
   use Nyra.Names
 
-  alias Nyra.Repo
+  alias Nyra.{Mailer, Emails, Repo}
   alias Nyra.Accounts.User
 
   import Ecto.Changeset
@@ -73,6 +73,13 @@ defmodule Nyra.Accounts do
     end
   end
 
+  @doc "Sends the login link email with the authentication code."
+  def deliver_code(email, code) do
+    email
+    |> Emails.login_link(code: code)
+    |> Mailer.deliver_later()
+  end
+
   @doc "Activates a user that isn't already active"
   def activate(%User{} = user) do
     user
@@ -81,12 +88,24 @@ defmodule Nyra.Accounts do
     |> User.update()
   end
 
-  def update_token(%User{} = user, token) do
-    user
-    |> User.changeset()
-    |> put_change(:token, token)
-    |> User.update()
-  end
+  # !! Marking for removal
+  # !! Marking for removal
+  # !! Marking for removal
+  # !! Marking for removal
+  # !! Marking for removal
+  # !! Marking for removal
+  # def update_token(id, token) when is_binary(id) do
+  #   case find(id) do
+  #     nil -> {:error, :invalid_user}
+  #     user -> update_token(user, token)
+  #   end
+  # end
+  # def update_token(%User{} = user, token) when is_struct(user) do
+  #   user
+  #   |> User.changeset()
+  #   |> put_change(:token, token)
+  #   |> User.update()
+  # end
 
   @doc "Creates & Inserts a new user into the database."
   def create_user(email, username) do
