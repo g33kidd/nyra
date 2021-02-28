@@ -6,13 +6,6 @@ defmodule NyraWeb.PageLive do
 
   import NyraWeb.Router.Helpers
 
-  @default_assigns [
-    current_state: "init",
-    email_input: "yo@gmail.com",
-    code_input: nil,
-    error: nil
-  ]
-
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -86,6 +79,10 @@ defmodule NyraWeb.PageLive do
       with true <- String.equivalent?(code, socket.assigns.generated_code),
            token <- sign_token(socket, "user token", id) do
         # wait just to make sure token is set before redirecting.
+        #
+        # Okay so currently just making a note here of some ideas on how to solve this fucking token problem.
+        # I'm thinking we need to redirect to /app?token=XXXXXX then redirect back to /app without the token param.
+        # The token isn't super important right away, but we need to get the user id from that token since it's been signed.
         Process.send_after(self(), :redirect, 100)
         push_event(socket, "token", %{token: token, id: id})
       else
