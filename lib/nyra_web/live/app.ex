@@ -3,6 +3,7 @@ defmodule NyraWeb.AppLive do
 
   alias Nyra.Accounts
   alias NyraWeb.{Components, Presence}
+  alias Phoenix.Socket.Broadcast
 
   import NyraWeb.Helpers
   import NyraWeb.Router.Helpers
@@ -43,7 +44,7 @@ defmodule NyraWeb.AppLive do
       with {:ok, user_id} <- verify_token(socket, "user token", token),
            user <- Accounts.find(user_id) do
         assign(socket,
-          current_user: Map.from_struct(user),
+          current_user: user,
           loading: false
         )
       else
@@ -177,25 +178,6 @@ defmodule NyraWeb.AppLive do
     #   end
   end
 
-  @doc "Handles error states by modifying the socket"
-  def handle_error(socket, :no_token) do
-    redirect(socket, to: app_path(socket, :index))
-  end
-
-  def handle_error(socket, :device_exists) do
-    redirect(socket, to: app_path(socket, :index))
-  end
-
-  def handle_error(socket, :account_not_active) do
-    redirect(socket, to: app_path(socket, :index))
-  end
-
-  def handle_error(socket, error) do
-    socket
-    |> assign(error: error)
-    |> redirect(to: page_path(socket, :index))
-  end
-
   @impl true
   @doc """
   Handles Phoenix socket broadcasts from the presence channel.
@@ -208,7 +190,7 @@ defmodule NyraWeb.AppLive do
 
   """
   def handle_info(
-        %Phoenix.Socket.Broadcast{
+        %Broadcast{
           event: "presence_diff",
           payload: _payload
         },

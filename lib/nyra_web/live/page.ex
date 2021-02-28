@@ -30,7 +30,7 @@ defmodule NyraWeb.PageLive do
 
       <%= case @current_state do %>
         <%= "init" -> %>
-        <%= live_component(@socket, Components.Auth, id: "auth_init", email_input: @email_input) %>
+        <%= live_component(@socket, Components.Auth, id: "authenticate", email_input: @email_input) %>
 
         <% "code" -> %>
         <%= live_component(@socket, Components.AuthVerify, id: "auth_verify", code_input: @code_input) %>
@@ -50,7 +50,6 @@ defmodule NyraWeb.PageLive do
   end
 
   @impl true
-  @doc "Handles authentication form from [Components.Auth]"
   def handle_event("authenticate", %{"email" => email}, socket) do
     socket =
       with {:ok, code} <- Bouncer.generate_code(socket.id),
@@ -71,7 +70,6 @@ defmodule NyraWeb.PageLive do
   end
 
   @impl true
-  @doc "Handles the verify form submission"
   def handle_event("verify", %{"code" => code}, socket) do
     id = socket.assigns.current_user.id
 
@@ -106,9 +104,4 @@ defmodule NyraWeb.PageLive do
   def handle_event("token_restore", %{"token" => _token}, socket) do
     {:noreply, socket}
   end
-
-  # @impl true
-  # def handle_info(:redirect, socket) do
-  #   {:noreply, push_redirect(socket, to: app_path(socket, :index))}
-  # end
 end
