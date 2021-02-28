@@ -1,10 +1,13 @@
 defmodule NyraWeb.SessionController do
   use NyraWeb, :controller
 
+  alias NyraWeb.Endpoint
   alias NyraWeb.Router, as: Routes
 
+  import Phoenix.Token, only: [verify: 3, sign: 3]
+
   def create(conn, %{"token" => token} = _params) do
-    case Phoenix.Token.verify(NyraWeb.Endpoint, "user token", token) do
+    case Phoenix.Token.verify(Endpoint, "user token", token) do
       {:ok, user_id} ->
         conn
         |> put_session(

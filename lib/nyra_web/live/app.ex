@@ -15,23 +15,27 @@ defmodule NyraWeb.AppLive do
   import NyraWeb.Router.Helpers, only: [session_path: 2, page_path: 2]
 
   @assign_defaults [
-    current_user: %{
-      id: nil,
-      username: nil
-    },
+    username: "",
+    user_id: "",
     online_users_count: nil,
     loading: true,
-    error: nil
+    error: ""
   ]
 
   @impl true
   def render(assigns) do
-    ~L"""
-    <%= live_component(@socket, Components.StatusBar, id: "status_bar", loading: @loading, online_users_count: @online_users_count) %>
+    IO.inspect(assigns)
 
-    <div>Loading: <%= @loading %></div>
-    <div>Current User Count: <%= @current_user.username %></div>
-    <div><%= @online_users_count %></div>
+    ~L"""
+
+    <%= live_component(@socket, Components.StatusBar, [
+          id: "status_bar",
+          username: @username,
+          user_id: @user_id,
+          loading: @loading,
+          online: @online_users_count
+        ]) %>
+
     """
   end
 
@@ -52,18 +56,35 @@ defmodule NyraWeb.AppLive do
   def mount(_params, session, socket) do
     socket = assign(socket, @assign_defaults)
 
+    connected?(socket)
+    |> IO.inspect()
+
     with true <- connected?(socket),
          {:ok, uuid} <- is_user_session?(session),
          :ok <- ensure_single_device(uuid),
          :ok <- Accounts.is_activated?(uuid),
-         user_info <- Accounts.take(uuid, [:id, :username]) do
-      socket
-      |> pool(uuid, [])
-      |> track(uuid)
-      |> assign(
-        current_user: user_info,
-        online_users_count: Presence.count_online(),
-        loading: false
+         user_info = Accounts.take(uuid, [:id, :username]) do
+      IO.inspect(user_info.username)
+      IO.inspect(user_info.id)
+
+      socket =
+        socket
+        # |> pool(uuid, [])
+        # |> track(uuid)
+        |> assign(socket,
+          username: user_info.username,
+          user_id: user_info.id,
+          online_users_count: Presence.count_online(),
+          loading: false
+        )
+        |> IO.inspect()
+
+      send_update(Components.StatusBar,
+        id: "status_bar",
+        username: socket.assigns.username,
+        user_id: socket.assigns.user_id,
+        loading: socket.assigns.loading,
+        online: socket.assigns.online_users_count
       )
     else
       false -> socket
