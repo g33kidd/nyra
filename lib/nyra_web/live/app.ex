@@ -51,11 +51,8 @@ defmodule NyraWeb.AppLive do
           loading: false
         )
       else
-        # TODO redirections.
         {:error, :invalid} ->
           socket
-
-        # redirect(socket, to: page_path())
 
         {:error, :expired} ->
           socket
@@ -63,9 +60,8 @@ defmodule NyraWeb.AppLive do
         {:error, :missing} ->
           socket
 
-        # When user is not found.. oops
         nil ->
-          nil
+          socket
       end
 
     {:noreply, socket}
@@ -85,38 +81,61 @@ defmodule NyraWeb.AppLive do
   TODO figure out how to tell if a socket has been Disconnected!
     need this in order to remove the user from the UserPool when they're not on the site anymore.
   """
-  def mount(_params, session, socket) do
+  def mount(_params, _session, socket) do
     socket = assign(socket, @assign_defaults)
-
-    with true <- connected?(socket),
-         {:ok, uuid} <- is_user_session?(session),
-         :ok <- ensure_single_device(uuid),
-         :ok <- Accounts.is_activated?(uuid),
-         user_info <- Accounts.take(uuid, [:id, :username]) do
-      socket =
-        socket
-        |> pool(uuid, [])
-        |> track(uuid)
-        |> assign(socket,
-          username: user_info.username,
-          user_id: user_info.id,
-          online_users_count: Presence.count_online(),
-          loading: false
-        )
-
-      send_update(Components.StatusBar,
-        id: "status_bar",
-        username: socket.assigns.username,
-        user_id: socket.assigns.user_id,
-        loading: socket.assigns.loading,
-        online: socket.assigns.online_users_count
-      )
-    else
-      false -> socket
-      {:error, error} -> handle_error(socket, error)
-    end
+    if connected?(socket), do: Process.send_after(self(), :presence_info, 500)
+    if connected?(socket), do: Process.send_after(self(), :update, 500)
+    # socket =
+    #   with true <- connected?(socket),
+    #     :ok <- ensure_single_device(uuid)
+    #    do
+    #     # assign(socket, loading: false)
+    #   else
+    #     false -> socket
+    #     {:error, :no_token} -> socket
+    #   end
 
     {:ok, socket}
+
+    # socket =
+    #   with true <- connected?(socket),
+    #        {:ok, uuid} <- is_user_session?(session),
+    #        :ok <- ensure_single_device(uuid),
+    #        :ok <- Accounts.is_activated?(uuid),
+    #        user_info <- Accounts.take(uuid, [:id, :username]) do
+    #     Process.send_after(self(), :presence_info, 10_000)
+
+    #     NyraWeb.Endpoint.subscribe("lobby")
+
+    #     Presence.track(
+    #       self(),
+    #       "lobby",
+    #       socket.id,
+    #       %{
+    #         current_user: uuid,
+    #         online_at: :os.system_time(:seconds)
+    #       }
+    #     )
+
+    #     send_update(Components.StatusBar,
+    #       id: "status_bar",
+    #       username: socket.assigns.username,
+    #       user_id: socket.assigns.user_id,
+    #       loading: socket.assigns.loading,
+    #       online: socket.assigns.online_users_count
+    #     )
+
+    #     socket
+    #     |> assign(socket,
+    #       username: user_info.username,
+    #       user_id: user_info.id,
+    #       online_users_count: Presence.count_online(),
+    #       loading: false
+    #     )
+    #   else
+    #     false -> socket
+    #     {:error, error} -> handle_error(socket, error)
+    #   end
   end
 
   @doc "Handles error states by modifying the socket"
@@ -161,6 +180,17 @@ defmodule NyraWeb.AppLive do
         online_users_count: Presence.count_online()
       )
 
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(:presence_info, socket) do
+    Process.send_after(self(), :presence_info, 10_000)
+    {:noreply, assign(socket, online_users_count: Presence.count_online())}
+  end
+
+  @impl true
+  def handle_info(:update, socket) do
     {:noreply, socket}
   end
 end

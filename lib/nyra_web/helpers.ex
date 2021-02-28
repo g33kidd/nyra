@@ -103,7 +103,7 @@ defmodule NyraWeb.Helpers do
     Endpoint.subscribe("lobby")
 
     Presence.track(
-      self(),
+      socket,
       "lobby",
       socket.id,
       %{
