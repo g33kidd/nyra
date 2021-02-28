@@ -59,6 +59,7 @@ defmodule Nyra.Accounts.User do
     user
     |> cast(attrs, @permitted_keys)
     |> validate_required(@required_keys)
+    # |> validate_format(:email, ~r//)
     |> unique_constraint(:username)
     |> unique_constraint(:email)
   end
@@ -68,6 +69,7 @@ defmodule Nyra.Accounts.User do
     %User{}
     |> cast(attrs, @creation_keys)
     |> validate_required(@required_keys)
+    # |> validate_format(:email, ~r//)
     |> unique_constraint(:username)
     |> unique_constraint(:email)
   end
@@ -101,10 +103,10 @@ defmodule Nyra.Accounts.User do
   end
 
   @doc "Updates a users flags"
-
   def update_flags(changeset, [{k, v} | t]) do
-    changeset = put_change(changeset, k, v)
-    update_flags(changeset, t)
+    changeset
+    |> put_change(k, v)
+    |> update_flags(t)
   end
 
   def update_flags(changeset, []), do: changeset
