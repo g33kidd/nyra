@@ -85,6 +85,7 @@ defmodule NyraWeb.AppLive do
     socket = assign(socket, @assign_defaults)
     if connected?(socket), do: Process.send_after(self(), :presence_info, 500)
     if connected?(socket), do: Process.send_after(self(), :update, 500)
+
     # socket =
     #   with true <- connected?(socket),
     #     :ok <- ensure_single_device(uuid)
