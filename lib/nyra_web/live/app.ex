@@ -22,6 +22,7 @@ defmodule NyraWeb.AppLive do
     <%= if @loading do %>
       <%= live_component(@socket, Components.Loading, id: "loading") %>
     <% else %>
+      <%= # Rendering the statusbar component telling the user stats about the service. %>
       <%= live_component(@socket, Components.StatusBar, [
         id: "status_bar",
         current_user: @current_user,
@@ -42,12 +43,13 @@ defmodule NyraWeb.AppLive do
   end
 
   @impl true
+  @doc "Called from the client-side code when page is mounted."
   def handle_event("token_restore", %{"token" => token}, socket) do
     socket =
       with {:ok, user_id} <- verify_token(socket, "user token", token),
            user <- Accounts.find(user_id) do
         assign(socket,
-          current_user: Map.from_struct(user),
+          current_user: user,
           loading: false
         )
       else
