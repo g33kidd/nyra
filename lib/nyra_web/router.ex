@@ -20,11 +20,13 @@ defmodule NyraWeb.Router do
     get "/session/:token", SessionController, :create, as: :session
     post "/session/destroy", SessionController, :destroy, as: :session
 
+    if Mix.env() == :dev do
+      get "/s/d", SessionController, :destroy, as: :session
+    end
+
     live "/", PageLive, :index
     live "/about", PageLive, :about
-
     live "/app", AppLive, :index
-    live "/settings", SettingsLive, :index
   end
 
   # Other scopes may use custom stacks.

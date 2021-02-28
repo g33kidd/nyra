@@ -7,6 +7,7 @@ import 'typeface-roboto'
 import 'typeface-roboto-slab'
 import 'typeface-roboto-condensed'
 import 'typeface-montserrat'
+import 'typeface-rubik'
 
 // webpack automatically bundles all modules in your
 // entry points. Those entry points can be configured

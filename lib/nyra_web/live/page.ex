@@ -1,44 +1,52 @@
 defmodule NyraWeb.PageLive do
   use NyraWeb, :live_view
 
-  alias NyraWeb.Router, as: Routes
-  alias Nyra.{Bouncer, Accounts, Mailer, Emails}
+  alias NyraWeb.Components
+  alias Nyra.{Emails, Mailer, Accounts, Bouncer}
+
+  import NyraWeb.Router.Helpers, only: [session_path: 3, app_path: 2]
+
+  @default_assigns [
+    current_state: "init",
+    email_input: "yo@gmail.com",
+    code_input: nil,
+    error: nil
+  ]
 
   @impl true
-  def mount(_params, session, socket) do
-    assigns = [
-      # Private stuff
-      generated_code: nil,
+  def render(assigns) do
+    ~L"""
+    <div class="hero">
 
-      # Text Input Fields
-      email_input: "yo@gmail.com",
-      code_input: "",
+      <div class="title logo">Nyra</div>
+      <div class="subtitle">Blah blah blah blah.</div>
+      <div class="content">
+      I'm baby roof party literally lumbersexual crucifix four dollar toast. Kitsch PBR&B truffaut, +1 gluten-free tattooed leggings freegan jianbing tumeric chia pour-over helvetica.
+      </div>
 
-      # Welcome Message when authentication finishes.
-      welcome_message: "",
-      welcome_type: :new_user,
+      <%= case @current_state do %>
+        <%= "init" -> %>
+        <%= live_component(@socket, Components.Auth, id: "authentication", email_input: @email_input) %>
 
-      # Error state
-      error: nil,
+        <% "code" -> %>
+        <%= live_component(@socket, Components.AuthVerify, id: "auth_verify", code_input: @code_input) %>
 
-      # current_state | :init, :awaiting_code, :authenticated, :error, :timeout, :account_created
-      # user_type | :new, :existing
-      current_state: :init,
-      user_type: :new
-    ]
+        <% "authenticated" -> %>
+        <%= live_component(@socket, Components.AuthWelcome, id: "auth_welcome") %>
 
-    # Redirects user to the app if they're already authenticated.
-    if session["token"] do
-      {:ok, redirect(socket, to: Routes.Helpers.app_path(socket, :index))}
-    else
-      {:ok, assign(socket, assigns)}
-    end
+        <% "timeout" -> %>
+        <%= live_component(@socket, Components.AuthTimeout, id: "auth_timeout") %>
+
+        <% "error" -> %>
+          <h1>There has been an "Error" <%= @error %></h1>
+    <% end %>
+
+    </div>
+    """
   end
 
-  @doc """
-  Handles the "authenticate" event from the LiveView form.
-  """
   @impl true
+  @doc "Handles authentication form from [Components.Auth]"
   def handle_event("authenticate", %{"email" => email}, socket) do
     {:ok, code} = Bouncer.generate_code(socket.id)
 
@@ -49,7 +57,7 @@ defmodule NyraWeb.PageLive do
         |> Mailer.deliver_later()
 
         assign(socket,
-          current_state: :awaiting_code,
+          current_state: "code",
           current_user: user,
           user_type: user_type,
           generated_code: code
@@ -65,14 +73,19 @@ defmodule NyraWeb.PageLive do
   @doc "Handles the verify form submission"
   def handle_event("verify", %{"code" => code}, socket) do
     socket =
-      with true <- String.equivalent?(code, socket.assigns.generated_code),
-           token <- sign_token(socket, "user token", socket.assigns.current_user.id) do
-        redirect(socket, to: Routes.Helpers.session_path(socket, :create, token))
+      with true <- String.equivalent?(code, socket.assigns.generated_code) do
+        token = sign_token(socket, "user token", socket.assigns.current_user.id)
+        redirect(socket, to: session_path(socket, :create, token))
       else
         false -> assign(socket, error: "Invalid code.")
         _default -> assign(socket, error: "Invalid code.")
       end
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def mount(_params, _session, socket) do
+    {:ok, assign(socket, loading: false)}
   end
 end

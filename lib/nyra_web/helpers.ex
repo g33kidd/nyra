@@ -104,4 +104,10 @@ defmodule NyraWeb.Helpers do
 
     socket
   end
+
+  @doc "Assigns a user to the UserPool"
+  def pool(socket, uuid, params) do
+    Nyra.UserPool.add(socket, uuid, params)
+    socket
+  end
 end

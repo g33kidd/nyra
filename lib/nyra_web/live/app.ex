@@ -8,22 +8,31 @@ defmodule NyraWeb.AppLive do
 
   use NyraWeb, :live_view
 
-  alias Nyra.{Accounts, UserPool}
-  alias NyraWeb.{Presence, Router}
+  alias Nyra.Accounts
+  alias NyraWeb.{Components, Presence}
 
   import NyraWeb.Helpers
   import NyraWeb.Router.Helpers, only: [session_path: 2, page_path: 2]
 
-  defp assign_defaults(socket) do
-    assign(socket,
-      current_user: %{
-        id: nil,
-        username: nil
-      },
-      online_users_count: nil,
-      loading: true,
-      error: nil
-    )
+  @assign_defaults [
+    current_user: %{
+      id: nil,
+      username: nil
+    },
+    online_users_count: nil,
+    loading: true,
+    error: nil
+  ]
+
+  @impl true
+  def render(assigns) do
+    ~L"""
+    <%= live_component(@socket, Components.StatusBar, id: "status_bar", loading: @loading, online_users_count: @online_users_count) %>
+
+    <div>Loading: <%= @loading %></div>
+    <div>Current User Count: <%= @current_user.username %></div>
+    <div><%= @online_users_count %></div>
+    """
   end
 
   @impl true
@@ -41,48 +50,25 @@ defmodule NyraWeb.AppLive do
     need this in order to remove the user from the UserPool when they're not on the site anymore.
   """
   def mount(_params, session, socket) do
-    socket = assign_defaults(socket)
+    socket = assign(socket, @assign_defaults)
 
-    socket =
-      with true <- connected?(socket),
-           {:ok, uuid} <- is_user_session?(session),
-           :ok <- ensure_single_device(uuid),
-           :ok <- Accounts.is_activated?(uuid),
-           user_info <- Accounts.take(uuid, [:id, :username]) do
-        UserPool.add(socket, uuid, [])
-
-        socket
-        |> track(uuid)
-        |> assign(
-          current_user: user_info,
-          online_users_count: Presence.count_online(),
-          loading: false
-        )
-      else
-        false ->
-          socket
-
-        {:error, error} ->
-          handle_error(socket, error)
-          # {:error, :no_token} ->
-          #   redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
-
-          # {:error, :device_exists} ->
-          #   redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
-
-          # # This should be the only case in which there is some boolean value.
-          # # Other cases will be state information stored as a Tuple.
-          # # also, this relates to [connected?/1]
-          # false ->
-          #   socket
-
-          # {:error, :account_not_active} ->
-          #   redirect(socket, to: Router.Helpers.session_path(socket, :destroy))
-
-          # {:error, default_error} ->
-          #   assign(socket, error: default_error)
-          #   redirect(socket, to: Router.Helpers.page_path(socket, :index))
-      end
+    with true <- connected?(socket),
+         {:ok, uuid} <- is_user_session?(session),
+         :ok <- ensure_single_device(uuid),
+         :ok <- Accounts.is_activated?(uuid),
+         user_info <- Accounts.take(uuid, [:id, :username]) do
+      socket
+      |> pool(uuid, [])
+      |> track(uuid)
+      |> assign(
+        current_user: user_info,
+        online_users_count: Presence.count_online(),
+        loading: false
+      )
+    else
+      false -> socket
+      {:error, error} -> handle_error(socket, error)
+    end
 
     {:ok, socket}
   end
@@ -117,7 +103,13 @@ defmodule NyraWeb.AppLive do
     # !NOTE this is only called when the user joins.
 
   """
-  def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: _payload}, socket) do
+  def handle_info(
+        %Phoenix.Socket.Broadcast{
+          event: "presence_diff",
+          payload: _payload
+        },
+        socket
+      ) do
     socket =
       assign(socket,
         online_users_count: Presence.count_online()

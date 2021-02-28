@@ -58,6 +58,8 @@ defmodule Nyra.Accounts do
   @doc """
   Returns a user if a user with the email given isn't found.
   Creates & Returns a new user with a randomly generated username if one isn't found.
+
+  TODO the return information should not be like it is..
   """
   def find_or_create_user(email) do
     case find(:email, email) do
