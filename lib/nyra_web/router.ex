@@ -18,8 +18,8 @@ defmodule NyraWeb.Router do
     pipe_through :browser
 
     # TODO get rid of this stuff as it won't be needed anymore.
-    # get "/session/:token", SessionController, :create, as: :session
-    # post "/session/destroy", SessionController, :destroy, as: :session
+    get "/a/:token", AuthController, :verify, as: :auth
+    post "/a/destroy", AuthController, :destroy, as: :auth
 
     # # Development stuff.
     # if Mix.env() == :dev do

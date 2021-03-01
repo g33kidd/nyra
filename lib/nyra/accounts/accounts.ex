@@ -44,13 +44,10 @@ defmodule Nyra.Accounts do
   Returns `nil` if a user couldn't be found.
   """
   def take(id, fields \\ []) do
-    case find(id) do
-      nil ->
-        nil
-
-      user ->
-        Map.take(user, fields)
-    end
+    User
+    |> User.with_id(id)
+    |> User.select_fields(fields)
+    |> Repo.one()
   end
 
   @doc """

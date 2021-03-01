@@ -7,14 +7,20 @@ defmodule NyraWeb.PageLive do
   import NyraWeb.Router.Helpers
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok,
-     assign(socket,
-       current_state: "init",
-       email_input: "yo@gmail.com",
-       code_input: nil,
-       error: nil
-     )}
+  def mount(_params, session, socket) do
+    IO.inspect(session)
+
+    if is_nil(session["token"]) do
+      {:ok,
+       assign(socket,
+         current_state: "init",
+         email_input: "yo@gmail.com",
+         code_input: nil,
+         error: nil
+       )}
+    else
+      {:ok, redirect(socket, to: app_path(socket, :index))}
+    end
   end
 
   @impl true
@@ -85,8 +91,8 @@ defmodule NyraWeb.PageLive do
         # This is the old method in-case needed again..
         # Process.send_after(self(), :redirect, 100)
         # push_event(socket, "token", %{token: token, id: id})
-
-        redirect(socket, to: app_path(socket, :index, token: token))
+        Accounts.find(id) |> Accounts.activate()
+        redirect(socket, to: auth_path(socket, :verify, token, %{token: token}))
       else
         false -> assign(socket, error: "Invalid code.")
         _default -> assign(socket, error: "Invalid code.")

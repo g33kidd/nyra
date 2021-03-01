@@ -94,6 +94,11 @@ defmodule Nyra.Accounts.User do
     from u in query, select: count(u.id)
   end
 
+  @doc "Selects a few fields that we need to return."
+  def select_fields(query, fields \\ []) do
+    from u in query, select: ^fields
+  end
+
   @doc "Commits changes for a changeset."
   def update(changeset) do
     case Repo.update(changeset) do
