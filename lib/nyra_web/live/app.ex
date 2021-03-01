@@ -2,7 +2,7 @@ defmodule NyraWeb.AppLive do
   use NyraWeb, :live_view
 
   alias Nyra.Accounts
-  alias NyraWeb.{Components, Presence}
+  alias NyraWeb.{Components, Presence, Endpoint}
   alias Phoenix.Socket.Broadcast
 
   import NyraWeb.Helpers
@@ -15,6 +15,7 @@ defmodule NyraWeb.AppLive do
     error: ""
   ]
 
+  # ! NOTE do I need the loading state if not setting default state in @assign_defaults??
   @impl true
   def render(assigns) do
     ~L"""
@@ -26,6 +27,12 @@ defmodule NyraWeb.AppLive do
         current_user: @current_user,
         loading: @loading,
         online: @online_users_count
+      ]) %>
+
+      <%= live_component(@socket, Components.ChatComposer, [
+        id: "chat_composer",
+        loading: @loading,
+        current_user: @current_user,
       ]) %>
     <% end %>
     """
@@ -89,8 +96,10 @@ defmodule NyraWeb.AppLive do
     socket =
       with {:ok, uuid} <- verify_token(socket, "user token", token),
            user <- Accounts.find(uuid) do
-        IO.puts("here")
-        assign(socket, current_user: user, loading: false)
+        IO.puts("here to redirect")
+        socket
+        # push_redirect(socket, to: app_path(socket, loading: false, current_user: user))
+        # assign(socket, current_user: user, loading: false)
       else
         {:error, :invalid} ->
           socket
@@ -115,7 +124,11 @@ defmodule NyraWeb.AppLive do
     socket =
       with true <- connected?(socket) do
         Process.send_after(self(), :presence_info, 500)
+        Endpoint.subscribe("lobby")
 
+        # OK WE CANT TRACK UNTIL WE GET THE UUID SO STOP TRYING
+        # OK WE CANT TRACK UNTIL WE GET THE UUID SO STOP TRYING
+        # OK WE CANT TRACK UNTIL WE GET THE UUID SO STOP TRYING
         # OK WE CANT TRACK UNTIL WE GET THE UUID SO STOP TRYING
         socket
       else
@@ -189,13 +202,7 @@ defmodule NyraWeb.AppLive do
     # !NOTE this is only called when the user joins.
 
   """
-  def handle_info(
-        %Broadcast{
-          event: "presence_diff",
-          payload: _payload
-        },
-        socket
-      ) do
+  def handle_info(%Broadcast{event: "presence_diff", payload: %{joins: _joins, leaves: _leaves}}, socket) do
     socket =
       assign(socket,
         online_users_count: Presence.count_online()
