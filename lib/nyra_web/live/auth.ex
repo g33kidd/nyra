@@ -12,7 +12,7 @@ defmodule NyraWeb.Auth do
   end
 
   def mount(%{}, _session, socket) do
-    {:noreply, redirect(socket, to: page_path(socket, :index))}
+    {:noreply, redirect(socket, to: home_path(socket, :index))}
   end
 
   def mount(%{"token" => token}, _session, socket) do

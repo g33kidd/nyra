@@ -27,8 +27,11 @@ defmodule NyraWeb.Router do
     end
 
     # Actual content pages.
-    live "/", PageLive, :index
-    live "/about", PageLive, :about
+    scope "/", Live do
+      live "/", Home, :index
+      live "/about", About, :about
+      live "/support", Support, :index
+    end
 
     # Application pages.
     live "/app", AppLive, :index

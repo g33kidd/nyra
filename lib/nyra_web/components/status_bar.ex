@@ -11,10 +11,7 @@ defmodule NyraWeb.Components.StatusBar do
   # TODO organize this and add a button to destroy the users session/account.
   def render(assigns) do
     ~L"""
-    <div class="support">
-      <div class="content"></div>
-      <%= live_patch "Support Us", to: page_path(@socket, :index) %>
-    </div>
+    <%= live_component @socket, NyraWeb.Components.SupportLinks %>
 
     <div class="statusbar">
     <%= if is_nil(@current_user) do %>

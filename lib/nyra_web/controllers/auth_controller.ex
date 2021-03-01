@@ -50,6 +50,6 @@ defmodule NyraWeb.AuthController do
   def destroy(conn, _params) do
     conn
     |> clear_session()
-    |> redirect(to: page_path(conn, :index))
+    |> redirect(to: home_path(conn, :index))
   end
 end

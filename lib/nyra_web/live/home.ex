@@ -6,10 +6,7 @@ defmodule NyraWeb.PageLive do
 
   import NyraWeb.Router.Helpers
 
-  @impl true
   def mount(_params, session, socket) do
-    IO.inspect(session)
-
     if is_nil(session["token"]) do
       {:ok,
        assign(socket,

@@ -51,6 +51,8 @@ defmodule NyraWeb do
 
       import NyraWeb.Helpers
 
+      alias NyraWeb.Components
+
       unquote(view_helpers())
     end
   end
