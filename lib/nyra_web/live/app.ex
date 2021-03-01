@@ -6,11 +6,11 @@ defmodule NyraWeb.AppLive do
   alias Phoenix.Socket.Broadcast
 
   import NyraWeb.Helpers
-  import NyraWeb.Router.Helpers
 
   @assign_defaults [
     current_user: nil,
     online_users_count: "???",
+    content: nil,
     loading: true,
     error: ""
   ]
@@ -18,11 +18,27 @@ defmodule NyraWeb.AppLive do
   @impl true
   def render(assigns) do
     ~L"""
-    <%= live_component(@socket, Components.StatusBar, [
-      id: "status_bar",
-      current_user: @current_user,
-      online: @online_users_count
-    ]) %>
+    <div class="inner">
+      <%= live_component(@socket, Components.StatusBar, [
+        id: "status_bar",
+        current_user: @current_user,
+        online: @online_users_count
+      ]) %>
+
+      <%= live_component(@socket, Components.Chat, [
+        id: "chat",
+        current_user: @current_user,
+        content: @content,
+        online: @online_users_count
+      ]) %>
+
+      <%= live_component(@socket, Components.ChatComposer, [
+        id: "composer",
+        current_user: @current_user,
+        content: @content,
+        online: @online_users_count
+      ]) %>
+    </div>
     """
   end
 
@@ -43,6 +59,10 @@ defmodule NyraWeb.AppLive do
         online_at: :os.system_time(:seconds)
       })
 
+      Nyra.LiveUpdates.subscribe_live_view(uuid)
+
+      Nyra.UserPool.add(socket, uuid, [])
+
       new_assigns = [
         current_user: Map.from_struct(user),
         online_users_count: Presence.count_online(),
@@ -59,23 +79,19 @@ defmodule NyraWeb.AppLive do
     end
   end
 
+  # TODO handles payload.leaves && payload.joins
+  # TODO setup a monitor for Presence to let other clients know when this one leaves.
   @impl true
-  @doc """
-  Handles Phoenix socket broadcasts from the presence channel.
-
-    1. Updates the current online users count.
-    2. Removes the user that just disconnected from the ENTIRE pool of users.
-
-    # TODO handles payload.leaves && payload.joins
-    # !NOTE this is only called when the user joins.
-
-  """
+  @doc "Handles Phoenix socket broadcasts from the presence channel."
   def handle_info(%Broadcast{event: "presence_diff", payload: %{joins: _joins, leaves: _leaves}}, socket) do
-    socket =
-      assign(socket,
-        online_users_count: Presence.count_online()
-      )
+    {:noreply,
+     socket
+     |> assign(online_users_count: Presence.count_online())}
+  end
 
+  # TODO this needs to send to another client that's also connected to the same UserPool????
+  @impl true
+  def handle_info({:compose_message, content}, socket) do
     {:noreply, socket}
   end
 end

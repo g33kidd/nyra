@@ -1,6 +1,8 @@
 defmodule Nyra.UserPool do
   @moduledoc """
 
+  ! hey this is probably scrapped at this point as moving onward.
+
   UserPool is a collection of user ids that are currently tracked in presence.
   There is some additional information that is stored in the state here
 
@@ -15,45 +17,12 @@ defmodule Nyra.UserPool do
     - params holds some useful information when matching other users.
 
     TODO make a note for storing filter information in the params.
-
-
   """
 
   use GenServer
 
   @name __MODULE__
-
-  @doc false
-  def start_link(_) do
-    GenServer.start_link(@name, %{}, name: @name)
-  end
-
-  @doc "Adds a user to the UserPool with default settings using the UUID."
-  def add(socket, uuid, params) do
-    GenServer.call(
-      @name,
-      {:add_user, uuid, socket, params}
-    )
-  end
-
-  @doc "Removes a user from the UserPool using the UUID."
-  def remove(uuid) do
-    GenServer.cast(
-      @name,
-      {:remove_user, uuid}
-    )
-  end
-
-  @doc "Update param information for a certain UUID"
-  def update(uuid, params) do
-    GenServer.call(
-      @name,
-      {:update, uuid, params}
-    )
-  end
-
-  @doc "Reads the state, for development only really"
-  def read_state, do: GenServer.call(@name, :read_state)
+  @session_length 300_000
 
   @impl true
   def init(state \\ %{}) do
@@ -61,13 +30,32 @@ defmodule Nyra.UserPool do
     {:ok, state}
   end
 
+  def start_link(_), do: GenServer.start_link(@name, %{}, name: @name)
+  def cast(event, payload), do: GenServer.cast(@name, {event, payload})
+  def call(event, payload), do: GenServer.call(@name, {event, payload})
+
+  @doc "Adds a user to the UserPool with default settings using the UUID."
+  def add(socket, uuid, params), do: call(:add_user, uuid: uuid, socket: socket, params: params)
+
+  @doc "Removes a user from the UserPool using the UUID."
+  def remove(uuid), do: cast(:remove_user, uuid: uuid)
+
+  @doc "Update param information for a certain UUID"
+  def update(uuid, params), do: call(:update, uuid: uuid, params: params)
+
+  @doc "Reads the state, for development only really"
+  def read_state, do: call(:read_state, [])
+
   # Callbacks
 
   @impl true
-  def handle_call({:add_user, uuid, socket, params}, _from, state) do
-    # Params is basically settings that other users trying to matchup with should know about.
-    # Such as age range, gender, etc..
-    # NOTE: Refer to the @moduledoc for what params data carries
+  def handle_call({:add_user, [uuid: uuid, socket: socket, params: opts]}, _from, state) do
+    params =
+      opts ++
+        [
+          exp: :os.system_time(:seconds) + @session_length
+        ]
+
     data = {0, socket.id, params}
     state = Map.put(state, uuid, data)
 
@@ -81,18 +69,6 @@ defmodule Nyra.UserPool do
   @doc "Pretty much handles cleaning up the UserPool when it gets busy."
   # TODO fix the cleanup method because it just removes everything at this point, it's useless.
   def handle_info(:cleanup, state) do
-    # state = cleanup(state)
     {:noreply, state}
   end
-
-  # Private
-
-  defp cleanup(state), do: cleanup(state, %{})
-
-  defp cleanup([{_uuid, data} | t], new_state) do
-    {_waiting, _filters, _} = data
-    cleanup(t, new_state)
-  end
-
-  defp cleanup(%{}, new_state), do: new_state
 end

@@ -1,5 +1,6 @@
 <main role="main" class="app" id="app">
-  <p class="alert alert-info" role="alert"
+<%# TODO move flashes somewhere else or fix styles. %>
+    <p class="alert alert-info" role="alert"
       phx-click="lv:clear-flash"
       phx-value-key="info"><%= live_flash(@flash, :info) %></p>
 

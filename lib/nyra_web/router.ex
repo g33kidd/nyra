@@ -22,9 +22,9 @@ defmodule NyraWeb.Router do
     post "/a/destroy", AuthController, :destroy, as: :auth
 
     # # Development stuff.
-    # if Mix.env() == :dev do
-    #   get "/s/d", SessionController, :destroy, as: :session
-    # end
+    if Mix.env() == :dev do
+      get "/s/d", AuthController, :destroy, as: :session
+    end
 
     # Actual content pages.
     live "/", PageLive, :index

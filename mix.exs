@@ -49,6 +49,7 @@ defmodule Nyra.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:bamboo, "~> 1.6"},
       {:plug_attack, "~> 0.4.2"},
+      {:ecto_psql_extras, "~> 0.2"},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
     ]
   end

@@ -50,8 +50,6 @@ defmodule Nyra.Bouncer do
     {:ok, state}
   end
 
-  # defp expire_tick, do: Process.send_after(@name, :expire_codes, @expire_interval)
-
   @impl true
   def handle_info(:expire_codes, state) do
     filtered_state = Enum.filter(state, fn {_, _, exp} -> expired?(exp) end)
