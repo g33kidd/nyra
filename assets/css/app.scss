@@ -22,6 +22,81 @@
 // TODO ORGANIZE
 $base-padding: 12px 16px;
 
+/* Works on Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: $pink transparentize(#000, 0.9);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  flex-grow: 1;
+  padding: $base-padding;
+
+  .message {
+    display: flex;
+
+    &.server {
+      padding: 12px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      background: linear-gradient(45deg, $pink, $orange);
+      color: #fff;
+      justify-content: space-between;
+      align-items: center;
+
+      .author {
+        flex-shrink: 0;
+        width: 100px;
+        font-weight: bolder;
+        margin-right: 24px;
+      }
+
+      .content {
+        flex-grow: 1;
+      }
+    }
+
+    // TODO custom user backgrounds/text colors.
+    &.user {
+      justify-content: space-around;
+      padding: 5px 0;
+      margin: 5px 0;
+      align-items: flex-start;
+      font-size: 14px;
+
+      .author {
+        flex-shrink: 0;
+        width: 100px;
+        font-weight: bolder;
+        text-align: right;
+        margin-right: 24px;
+      }
+
+      .content {
+        flex-grow: 1;
+      }
+    }
+  }
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $pink; /* color of the scroll thumb */
+    border-radius: 20px; /* roundness of the scroll thumb */
+    border: 0 solid transparentize(#000, 0.9); /* creates padding around scroll thumb */
+    background-clip: content-box;
+  }
+}
+
 .support {
   padding: 10px 16px;
   background: #000;
@@ -110,6 +185,7 @@ $base-padding: 12px 16px;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  background: #fefefe;
 
   .user-count {
     text-align: right;

@@ -27,16 +27,12 @@ defmodule NyraWeb.AppLive do
 
       <%= live_component(@socket, Components.Chat, [
         id: "chat",
-        current_user: @current_user,
-        content: @content,
-        online: @online_users_count
+        content: @content
       ]) %>
 
       <%= live_component(@socket, Components.ChatComposer, [
         id: "composer",
-        current_user: @current_user,
-        content: @content,
-        online: @online_users_count
+        content: @content
       ]) %>
     </div>
     """
@@ -44,7 +40,8 @@ defmodule NyraWeb.AppLive do
 
   @impl true
   # TODO figure out how to tell if a socket has been Disconnected!
-  # remove the user from the UserPool when they're Disconnected
+  # TODO remove the user from the UserPool when they're Disconnected
+  # TODO fix Presence user count and implement separate Statistics module.
   def mount(_params, %{"token" => token}, socket) do
     socket = assign(socket, @assign_defaults)
 

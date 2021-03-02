@@ -25,7 +25,8 @@ defmodule NyraWeb.AuthController do
         |> redirect(to: "/app")
 
       {:error, err} ->
-        conn |> put_flash(:error, "Token isn't valid or expired. #{err}")
+        IO.inspect err
+        conn |> put_flash(:error, "Token isn't valid or expired.")
     end
   end
 
