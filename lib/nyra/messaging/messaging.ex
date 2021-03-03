@@ -21,10 +21,6 @@ defmodule Nyra.Messaging do
   # Handles matching a user with another user based on search params, then notify.
   @impl true
   def handle_call({:queue, [pid: pid, socket: socket, uuid: uuid]}, _from, state) do
-    IO.inspect(pid)
-    IO.inspect(socket)
-    IO.inspect(uuid)
-
     {:reply, :ok, state}
   end
 end

@@ -42,7 +42,12 @@ defmodule Nyra.Naming do
   }
 
   @things %{
-    :normal => [],
+    :normal => [
+      "biscuit",
+      "forest",
+      "apple",
+      "gemini"
+    ],
     :music => [],
     :cyber => [],
     :colors => [],
@@ -85,15 +90,13 @@ defmodule Nyra.Naming do
     Randomize flags for mutators
 
   """
-  def generate_username(descriptor) when is_atom(descriptor) do
+  def generate_username(descriptor \\ :normal) when is_atom(descriptor) do
     desc =
       @descriptors[descriptor]
       |> shuffle_words()
       |> take_words()
       |> shuffle_words()
       |> get_final()
-
-    # |> transform(@default_transformer_flags)
 
     what =
       @things[descriptor]
@@ -105,9 +108,9 @@ defmodule Nyra.Naming do
     # |> transform(@default_transformer_flags)
 
     # TODO ranzomize joiner
-    joiner = "-"
+    joiner = ""
 
-    Enum.join([desc, what], joiner)
+    Enum.join([String.capitalize(desc), String.capitalize(what)], joiner)
   end
 
   def shuffle_words(list \\ []), do: Enum.shuffle(list)
