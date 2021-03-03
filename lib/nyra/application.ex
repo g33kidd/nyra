@@ -13,6 +13,8 @@ defmodule Nyra.Application do
       NyraWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Nyra.PubSub},
+      # Start Presence Monitor
+      # Nyra.Messaging.Monitor,
       # Start the Endpoint (http/https)
       NyraWeb.Endpoint,
       # Start Phoenix Presence

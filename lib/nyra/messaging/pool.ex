@@ -1,8 +1,6 @@
 defmodule Nyra.UserPool do
   @moduledoc """
 
-  ! hey this is probably scrapped at this point as moving onward.
-
   UserPool is a collection of user ids that are currently tracked in presence.
   There is some additional information that is stored in the state here
 
@@ -19,9 +17,8 @@ defmodule Nyra.UserPool do
     TODO make a note for storing filter information in the params.
   """
 
-  use GenServer
+  use Nyra, :gen_server
 
-  @name __MODULE__
   @session_length 300_000
 
   @impl true
@@ -42,9 +39,6 @@ defmodule Nyra.UserPool do
 
   @doc "Update param information for a certain UUID"
   def update(uuid, params), do: call(:update, uuid: uuid, params: params)
-
-  @doc "Reads the state, for development only really"
-  def read_state, do: call(:read_state, [])
 
   # Callbacks
 

@@ -3,17 +3,19 @@ defmodule Nyra.LiveUpdates do
   @topic inspect(__MODULE__)
 
   @doc "subscribes for everyone"
-  def subscribe_live_view do
+  def subscribe_live_view() do
     Phoenix.PubSub.subscribe(Nyra.PubSub, topic(), link: true)
   end
 
   @doc "subscribes a specific user"
-  def subscribe_live_view(uuid) do
+  def subscribe_live_view(pid, socket, uuid) do
     Phoenix.PubSub.subscribe(Nyra.PubSub, topic(uuid), link: true)
-  end
 
-  @doc "subscribes a user to a messaging instance"
-  # def subscribe_messaging()
+    NyraWeb.Presence.track(pid, "lobby", socket.id, %{
+      id: uuid,
+      online_at: :os.system_time(:seconds)
+    })
+  end
 
   @doc "notify all users"
   def notify_live_view(payload) do

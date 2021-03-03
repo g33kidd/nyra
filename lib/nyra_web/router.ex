@@ -1,6 +1,8 @@
 defmodule NyraWeb.Router do
   use NyraWeb, :router
 
+  alias NyraWeb.Live
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -26,15 +28,13 @@ defmodule NyraWeb.Router do
       get "/s/d", AuthController, :destroy, as: :session
     end
 
-    # Actual content pages.
-    scope "/", Live do
-      live "/", Home, :index
-      live "/about", About, :about
-      live "/support", Support, :index
-    end
-
     # Application pages.
     live "/app", AppLive, :index
+
+    # Actual content pages.
+    live "/", HomeLive, :index
+    live "/about", AboutLive, :about
+    live "/support", SupportLive, :index
   end
 
   # Other scopes may use custom stacks.

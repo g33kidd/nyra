@@ -49,10 +49,6 @@ defmodule NyraWeb do
       use Phoenix.LiveView,
         layout: {NyraWeb.LayoutView, "live.html"}
 
-      import NyraWeb.Helpers
-
-      alias NyraWeb.Components
-
       unquote(view_helpers())
     end
   end
@@ -60,7 +56,7 @@ defmodule NyraWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
-
+      alias NyraWeb.Components
       unquote(view_helpers())
     end
   end
@@ -95,6 +91,9 @@ defmodule NyraWeb do
 
       import NyraWeb.ErrorHelpers
       import NyraWeb.Gettext
+
+      import NyraWeb.Helpers
+
       alias NyraWeb.Router.Helpers, as: Routes
     end
   end

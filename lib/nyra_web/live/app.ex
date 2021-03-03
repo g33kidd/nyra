@@ -1,8 +1,8 @@
 defmodule NyraWeb.AppLive do
   use NyraWeb, :live_view
 
-  alias Nyra.Accounts
-  alias NyraWeb.{Components, Presence, Endpoint}
+  alias Nyra.{LiveUpdates, Accounts, UserPool, Messaging}
+  alias NyraWeb.{Components, Presence}
   alias Phoenix.Socket.Broadcast
 
   import NyraWeb.Helpers
@@ -43,25 +43,18 @@ defmodule NyraWeb.AppLive do
   # TODO remove the user from the UserPool when they're Disconnected
   # TODO fix Presence user count and implement separate Statistics module.
   def mount(_params, %{"token" => token}, socket) do
+    # if is_nil(token), do: {:noreply, socket |> put_flash(:error, "Waiting on token..")}
     socket = assign(socket, @assign_defaults)
 
     with true <- connected?(socket),
          {:ok, uuid} <- verify_token(socket, "user token", token),
          :ok <- Accounts.is_activated?(uuid),
          user <- Accounts.take(uuid, [:id, :username]) do
-      Endpoint.subscribe("lobby")
-
-      Presence.track(self(), "lobby", socket.id, %{
-        id: uuid,
-        online_at: :os.system_time(:seconds)
-      })
-
-      Nyra.LiveUpdates.subscribe_live_view(uuid)
-
-      Nyra.UserPool.add(socket, uuid, [])
+      LiveUpdates.subscribe_live_view(self(), socket, uuid)
 
       new_assigns = [
-        current_user: Map.from_struct(user),
+        current_user: user,
+        statistics: Presence.statistics("lobby"),
         online_users_count: Presence.count_online(),
         loading: false
       ]
@@ -71,10 +64,21 @@ defmodule NyraWeb.AppLive do
       false ->
         {:ok, socket}
 
+      {:error, :account_not_found} ->
+        {:ok, assign(socket, error: "Account not found.")}
+
       {:error, error} ->
+        IO.inspect("error")
+        IO.inspect(error)
         {:ok, assign(socket, error: error), temporary_assigns: [error: error]}
     end
   end
+
+  # # Nothing's in the session or params, so assume there is no user. Force to home page.
+  # def mount(%{}, %{}, socket) do
+  #   IO.inspect("hello")
+  #   {:ok, redirect(socket, to: home_path(socket, :index))}
+  # end
 
   # TODO handles payload.leaves && payload.joins
   # TODO setup a monitor for Presence to let other clients know when this one leaves.
@@ -89,6 +93,13 @@ defmodule NyraWeb.AppLive do
   # TODO this needs to send to another client that's also connected to the same UserPool????
   @impl true
   def handle_info({:compose_message, content}, socket) do
+    Messaging.send(self(), content, socket)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(message, socket) do
+    IO.puts(message)
     {:noreply, socket}
   end
 end

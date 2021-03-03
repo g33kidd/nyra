@@ -1,8 +1,6 @@
 defmodule NyraWeb.Components.StatusBar do
   use Phoenix.LiveComponent
 
-  import NyraWeb.Router.Helpers
-
   # TODO maybe use Preload method for loading a user?
   # def preload(assigns) do
   #   IO.inspect(assigns)
@@ -10,6 +8,8 @@ defmodule NyraWeb.Components.StatusBar do
 
   # TODO organize this and add a button to destroy the users session/account.
   def render(assigns) do
+    IO.inspect(assigns)
+
     ~L"""
     <%= live_component @socket, NyraWeb.Components.SupportLinks %>
 

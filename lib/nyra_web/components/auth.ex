@@ -3,7 +3,7 @@ defmodule NyraWeb.Components.Auth do
 
   def render(assigns) do
     ~L"""
-    <form phx-submit="authenticate" >
+    <form phx-submit="authenticate">
       <input
         type="email"
         name="email"

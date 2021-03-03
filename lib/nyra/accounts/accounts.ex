@@ -1,8 +1,6 @@
 defmodule Nyra.Accounts do
   @moduledoc false
 
-  use Nyra.Names
-
   alias Nyra.{Mailer, Emails, Repo}
   alias Nyra.Accounts.User
 
@@ -34,7 +32,6 @@ defmodule Nyra.Accounts do
     end
   end
 
-  def find(:username, username), do: Repo.get_by(User, username: username)
   def find(:email, email), do: Repo.get_by(User, email: email)
 
   @doc """
@@ -59,7 +56,7 @@ defmodule Nyra.Accounts do
   def find_or_create_user(email) do
     case find(:email, email) do
       nil ->
-        {:ok, username} = generate_username()
+        username = generate_username()
         new_user = create_user(email, username)
         {:ok, new_user, :new}
 
@@ -83,32 +80,15 @@ defmodule Nyra.Accounts do
     |> User.update()
   end
 
-  # !! Marking for removal
-  # !! Marking for removal
-  # !! Marking for removal
-  # !! Marking for removal
-  # !! Marking for removal
-  # !! Marking for removal
-  # def update_token(id, token) when is_binary(id) do
-  #   case find(id) do
-  #     nil -> {:error, :invalid_user}
-  #     user -> update_token(user, token)
-  #   end
-  # end
-  # def update_token(%User{} = user, token) when is_struct(user) do
-  #   user
-  #   |> User.changeset()
-  #   |> put_change(:token, token)
-  #   |> User.update()
-  # end
-
   @doc "Creates & Inserts a new user into the database."
   def create_user(email, username) do
-    changeset =
-      %{"email" => email, "username" => username}
-      |> User.creation_changeset()
-
-    case User.insert(changeset) do
+    %{
+      "email" => email,
+      "username" => username
+    }
+    |> User.creation_changeset()
+    |> User.insert()
+    |> case do
       {:created, user} ->
         user
 
@@ -120,16 +100,15 @@ defmodule Nyra.Accounts do
   @doc "Checks if a user is activated based on the UUID provided."
   @spec is_activated?(String.t()) :: :ok | {:error, :account_not_active}
   def is_activated?(user_id) do
-    count =
-      User
-      |> User.with_id(user_id)
-      |> User.where_active()
-      |> User.select_count()
-      |> Repo.all()
-
-    case Enum.at(count, 0) do
-      0 -> :ok
-      1 -> {:error, :account_not_found}
+    User
+    |> User.with_id(user_id)
+    |> User.where_active()
+    |> User.select_count()
+    |> Repo.all()
+    |> Enum.at(0)
+    |> case do
+      0 -> {:error, :account_not_found}
+      1 -> :ok
     end
   end
 
@@ -141,32 +120,7 @@ defmodule Nyra.Accounts do
   """
   def insert_user(changeset), do: Repo.insert(changeset, returning: [:id])
 
-  @doc """
-  Generates a mostly random username with 64x64 possible combinations.
-  """
-  def generate_username do
-    name =
-      @names_matrix_1
-      |> Enum.map(fn names -> Enum.random(Enum.map(names, fn n -> String.capitalize(n) end)) end)
-      |> Enum.join("")
-
-    case ensure_username_available(name) do
-      :ok -> {:ok, name}
-      _default -> generate_username()
-    end
-  end
-
-  @doc "Ensures a name isn't taken by another user already."
-  def ensure_username_available(username \\ "") do
-    count =
-      User
-      |> User.with_username(username)
-      |> User.select_count()
-      |> Repo.all()
-
-    case Enum.at(count, 0) do
-      0 -> :ok
-      1 -> :taken
-    end
+  def generate_username() do
+    Nyra.Naming.generate_username(:normal)
   end
 end

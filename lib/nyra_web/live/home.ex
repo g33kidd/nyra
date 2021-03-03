@@ -1,4 +1,4 @@
-defmodule NyraWeb.PageLive do
+defmodule NyraWeb.HomeLive do
   use NyraWeb, :live_view
 
   alias NyraWeb.Components
@@ -6,6 +6,7 @@ defmodule NyraWeb.PageLive do
 
   import NyraWeb.Router.Helpers
 
+  @impl true
   def mount(_params, session, socket) do
     if is_nil(session["token"]) do
       {:ok,

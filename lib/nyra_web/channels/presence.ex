@@ -22,4 +22,12 @@ defmodule NyraWeb.Presence do
     |> list()
     |> Enum.count()
   end
+
+  # TODO more information here + cached values in ETS or similar service.
+  @doc "Get some stats about users and information in Presence"
+  def statistics(topic \\ "lobby") do
+    %{
+      online: count_online(topic)
+    }
+  end
 end

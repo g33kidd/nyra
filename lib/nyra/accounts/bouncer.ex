@@ -8,43 +8,29 @@ defmodule Nyra.Bouncer do
     - Generated Code
     - Origin Socket ID
     - Expiration Time, in seconds.
-
-
-  # Note
-  This is some old dead code, but it might be used at some point in the future if decided to move away
-  from Phoenix LiveView and into sockets or something??
-
-  TODO remove at some point
   """
+  use Nyra, :gen_server
 
-  use GenServer
+  # def start_link(_), do: start_link(__MODULE__, [], name: @name)
 
-  @name __MODULE__
-  @expire_interval 30_000
+  # # Pushing the user to the state
+  # def guestlist(sid) do
+  #   call(@name, {:guestlist, sid})
+  # end
 
-  def start_link(_), do: GenServer.start_link(__MODULE__, [], name: @name)
+  # # Seeing if token exists in the state and verifies it.
+  # def is_cool?(code) do
+  #   call(@name, {:is_cool, code})
+  # end
 
-  # Pushing the user to the state
-  def guestlist(sid) do
-    GenServer.call(@name, {:guestlist, sid})
-  end
-
-  # Seeing if token exists in the state and verifies it.
-  def is_cool?(code) do
-    GenServer.call(@name, {:is_cool, code})
-  end
-
-  # Take codes where [expired?] is true.
-  def expire_codes, do: GenServer.call(@name, :expire_codes)
-
-  # Just for development...
-  def read_state, do: GenServer.call(@name, :read_state)
+  # # Take codes where [expired?] is true.
+  # def expire_codes, do: call(@name, :expire_codes)
 
   # Callbacks
 
   @impl true
   def init(state \\ []) do
-    :timer.send_interval(@expire_interval, @name, :expire_codes)
+    # :timer.send_interval(@expire_interval, @name, :expire_codes)
 
     # initializing the state
     {:ok, state}
@@ -55,10 +41,6 @@ defmodule Nyra.Bouncer do
     filtered_state = Enum.filter(state, fn {_, _, exp} -> expired?(exp) end)
     {:noreply, filtered_state}
   end
-
-  # this is honestly for development so when this is not needed... chuck it!
-  @impl true
-  def handle_call(:read_state, _from, state), do: {:reply, state, state}
 
   # Adds a user to the guestlist containing the expiration time, auth code & original session id.
   @impl true

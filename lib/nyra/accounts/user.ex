@@ -59,8 +59,6 @@ defmodule Nyra.Accounts.User do
     user
     |> cast(attrs, @permitted_keys)
     |> validate_required(@required_keys)
-    # |> validate_format(:email, ~r//)
-    |> unique_constraint(:username)
     |> unique_constraint(:email)
   end
 
@@ -69,8 +67,6 @@ defmodule Nyra.Accounts.User do
     %User{}
     |> cast(attrs, @creation_keys)
     |> validate_required(@required_keys)
-    # |> validate_format(:email, ~r//)
-    |> unique_constraint(:username)
     |> unique_constraint(:email)
   end
 

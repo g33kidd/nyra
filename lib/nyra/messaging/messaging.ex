@@ -3,7 +3,7 @@ defmodule Nyra.Messaging do
   The [Messaging] server is responsible for keeping track of connected chats.
   Since we're keeping track of users states in the [UserPool] we keep track of connected users here.
   """
-
+  use Nyra, :gen_server
   @name __MODULE__
 
   @max_users 4
@@ -11,7 +11,6 @@ defmodule Nyra.Messaging do
 
   @impl true
   def init(state \\ %{}) do
-    # :timer.send_interval(50_000, @name, :cleanup)
     {:ok, state}
   end
 
