@@ -10,6 +10,7 @@ defmodule NyraWeb.AppLive do
   @assign_defaults [
     current_user: nil,
     online_users_count: "???",
+    statistics: nil,
     content: nil,
     loading: true,
     error: ""

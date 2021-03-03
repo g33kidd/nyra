@@ -5,10 +5,11 @@ defmodule NyraWeb.Helpers do
   # TODO do I need this?
   """
 
+  import Phoenix.LiveView
+
   alias Phoenix.{LiveView, Token}
   alias NyraWeb.{Presence, Endpoint}
 
-  # TODO do I need this?
   @doc "Signs a token that can be a sent to a client for Plug.Conn"
   def sign_token(%Plug.Conn{} = _conn, salt, data) do
     Token.sign(Endpoint, salt, data)
@@ -18,7 +19,6 @@ defmodule NyraWeb.Helpers do
     Token.sign(Endpoint, salt, data)
   end
 
-  # TODO do I need this?
   @doc "Verifies a token for a Plug connection"
   def verify_token(%Plug.Conn{} = _conn, salt, token) do
     Token.verify(Endpoint, salt, token)
@@ -59,14 +59,11 @@ defmodule NyraWeb.Helpers do
   """
   @spec ensure_single_device(String.t()) :: :ok | {:error, :device_exists}
   def ensure_single_device(id) when is_binary(id) do
-    count =
-      NyraWeb.Presence.list_online()
-      |> ensure_single_device(id)
-
-    if count > 0 do
-      {:error, :device_exists}
-    else
-      :ok
+    NyraWeb.Presence.list_online()
+    |> ensure_single_device(id)
+    |> case do
+      0 -> :ok
+      _ -> {:error, :device_exists}
     end
   end
 
@@ -92,23 +89,6 @@ defmodule NyraWeb.Helpers do
   def sign_token(socket, salt) do
     %{id: user_id} = socket.assigns.current_user
     Token.sign(Endpoint, salt, user_id)
-  end
-
-  @doc "Sets up tracking for the user Socket"
-  def track(socket, uuid) do
-    Endpoint.subscribe("lobby")
-
-    Presence.track(
-      socket,
-      "lobby",
-      socket.id,
-      %{
-        current_user: uuid,
-        online_at: :os.system_time(:seconds)
-      }
-    )
-
-    socket
   end
 
   @doc "Assigns a user to the UserPool"
