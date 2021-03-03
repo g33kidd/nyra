@@ -51,6 +51,7 @@ defmodule NyraWeb.AppLive do
          :ok <- Accounts.is_activated?(uuid),
          user <- Accounts.take(uuid, [:id, :username]) do
       LiveUpdates.subscribe_live_view(self(), socket, uuid)
+      Messaging.queue(self(), socket, uuid)
 
       new_assigns = [
         current_user: user,

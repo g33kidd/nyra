@@ -10,6 +10,7 @@ defmodule Nyra.LiveUpdates do
   @doc "subscribes a specific user"
   def subscribe_live_view(pid, socket, uuid) do
     Phoenix.PubSub.subscribe(Nyra.PubSub, topic(uuid), link: true)
+    Nyra.UserPool.add(socket, uuid, [])
 
     NyraWeb.Presence.track(pid, "lobby", socket.id, %{
       id: uuid,

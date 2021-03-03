@@ -19,6 +19,8 @@ defmodule Nyra.Application do
       NyraWeb.Endpoint,
       # Start Phoenix Presence
       NyraWeb.Presence,
+      # Start Messaging Service
+      Nyra.Messaging,
       # Start the User Pool
       Nyra.UserPool,
       # Plug Attack storage
